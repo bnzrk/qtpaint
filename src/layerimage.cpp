@@ -1,8 +1,10 @@
 #include "layerimage.h"
 
-LayerImage::LayerImage(QObject* parent) : QObject(parent)
+LayerImage::LayerImage(QSize size, QObject* parent) :
+    QObject(parent),
+    m_size{size}
 {
-    initializeImage(800, 600);
+    initializeImage();
 }
 
 LayerImage::~LayerImage()
@@ -16,9 +18,8 @@ void LayerImage::swapLayers(int a, int b)
     emit imageChanged();
 }
 
-void LayerImage::initializeImage(QSize size)
+void LayerImage::initializeImage()
 {
-    m_size = size;
     for (int i = 0; i < 3; i++)
     {
         createNewLayer();

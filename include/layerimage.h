@@ -11,20 +11,20 @@ class LayerImage : public QObject
 {
     Q_OBJECT
 public:
-    explicit LayerImage(QObject* parent = nullptr);
+    explicit LayerImage(QSize size, QObject* parent = nullptr);
+    explicit LayerImage(int width, int height, QObject* parent = nullptr) : LayerImage(QSize(width, height)) {}
     ~LayerImage();
 
-    void initializeImage(QSize size);
-    void initializeImage(int width, int height) { initializeImage(QSize(width, height)); }
+    void initializeImage();
 
     void createNewLayer();
     void swapLayers(int a, int b);
     void toggleLayerVisible(int index);
 
     QVector<Layer*> layers() { return m_layers; }
-    int getLayerCount() { return m_layers.size(); }
-    Layer* getLayerAtIndex(int index) { return m_layers[index]; }
-    QSize getSize() { return m_size; }
+    int layerCount() const { return m_layers.size(); }
+    Layer* layerAtIndex(int index) { return m_layers[index]; }
+    QSize size() const { return m_size; }
 signals:
     void imageChanged();
 private:

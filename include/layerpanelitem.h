@@ -16,7 +16,6 @@ public:
     explicit LayerPanelItem(QString displayName, QWidget *parent = nullptr);
     ~LayerPanelItem();
 
-    bool isSelected() { return m_selected; }
     void select();
     void deselect();
 
@@ -33,12 +32,11 @@ signals:
     void visibleButtonToggled(LayerPanelItem* sender);
     void upButtonClicked(LayerPanelItem* sender);
     void downButtonClicked(LayerPanelItem* sender);
+    void clicked(LayerPanelItem* sender);
 private:
     virtual void mousePressEvent(QMouseEvent* event) override;
 private:
     Ui::LayerPanelItem *ui;
-
-    bool m_selected = false;
 };
 
 #endif // LAYERPANELITEM_H

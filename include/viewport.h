@@ -6,6 +6,7 @@
 #include <QScrollBar>
 #include <QShortcut>
 #include "canvas.h"
+#include "sessionmanager.h"
 
 class Viewport : public QScrollArea
 {
@@ -17,7 +18,8 @@ public:
     virtual void resizeEvent(QResizeEvent* event) override;
 
     void setSourceImage(LayerImage *image);
-    void updateDisplay();
+    void setSessionManager(SessionManager* session);
+    void updateView();
 
     void setZoom(int zoom);
     void zoomIn();
@@ -27,8 +29,12 @@ public:
 public:
     static const int MAX_MARGIN_SIZE = 900;
     static const int MAX_ZOOM = 10;
+public slots:
+    void onSessionDeleted() { m_session = nullptr; }
 private:
-    LayerImage *m_sourceImage = nullptr;
+    LayerImage* sourceImage() const { return m_session->sourceImage(); }
+private:
+    SessionManager* m_session = nullptr;
     QWidget m_background;
     QBoxLayout m_layout;
     Canvas m_canvas;

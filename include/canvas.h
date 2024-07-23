@@ -5,18 +5,19 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "layerimage.h"
+#include "sessionmanager.h"
 
 class Canvas : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Canvas(QWidget *parent = nullptr);
+    explicit Canvas(QWidget* parent = nullptr);
     ~Canvas();
     
-    void setSourceImage(LayerImage *image);
-    LayerImage* getCanvas() { return m_sourceImage; }
+    void setSessionManager(SessionManager* session);
 public slots:
     void onImageChanged() { update(); }
+    void onSessionDeleted();
 private:
     // Event Overrides
     virtual void paintEvent(QPaintEvent* event) override;
@@ -26,24 +27,22 @@ private:
 
     // Canvas
     void draw();
-    void initializeImage();
-    double pixelRatio() const { return width() / m_sourceImage->getSize().width(); }
+    double pixelRatio() const { return width() / sourceImage()->size().width(); }
 
     // Mappings
     QRect snapRectToGrid(const QRect& rect) const;
     QPoint snapPointToGrid(const QPoint& point) const;
     QRect fitRectToPixel(const QRect& rect) const;
-    //QRect fitRectToPixel(const QRect& rect) const;
 
     QPoint mapPointToImage(const QPoint& point) const;
     QPoint mapPointToWidget(const QPointF& point) const;
     QRect mapRectToImage(const QRect& rect) const;
     QRect mapRectToWidget(const QRect& rect) const;
+
+    LayerImage* sourceImage() const { return m_session->sourceImage(); }
 private:
-    // LayerImage
-    LayerImage* m_sourceImage = nullptr;
-    QImage m_background;
-    int m_activeLayer = 0;
+    // Session
+    SessionManager* m_session = nullptr;
 
     // Settings
     QVector<QColor> m_penColors;

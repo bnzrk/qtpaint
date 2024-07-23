@@ -22,18 +22,16 @@ LayerPanelItem::~LayerPanelItem()
 
 void LayerPanelItem::mousePressEvent(QMouseEvent* event)
 {
-    (m_selected) ? deselect() : select();
+    emit clicked(this);
 }
 
 void LayerPanelItem::select()
 {
-    m_selected = true;
     ui->draggableRegion->setStyleSheet(SELECTED_STYLE);
 }
 
 void LayerPanelItem::deselect()
 {
-    m_selected = false;
     ui->draggableRegion->setStyleSheet(UNSELECTED_STYLE);
 }
 

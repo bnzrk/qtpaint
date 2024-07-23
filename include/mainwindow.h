@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include "viewport.h"
-#include "layerimage.h"
 #include "sessionmanager.h"
 
 namespace Ui {
@@ -22,7 +21,6 @@ private:
     Ui::MainWindow *ui;
 
     SessionManager* m_session = nullptr;
-    LayerImage* m_sourceImage = nullptr;
     Viewport* m_viewport = nullptr;
 };
 

@@ -9,10 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_session = new SessionManager(this);
 
-    m_sourceImage = new LayerImage();
-
-    ui->viewport->setSourceImage(m_sourceImage);
-    ui->layerPanel->setSourceImage(m_sourceImage);
+    ui->viewport->setSessionManager(m_session);
+    ui->layerPanel->setSessionManager(m_session);
 }
 
 MainWindow::~MainWindow()

@@ -2,7 +2,11 @@
 
 SessionManager::SessionManager(QObject *parent)
     : QObject{parent}
-{}
+{
+    LayerImage* sourceImage = new LayerImage(800, 600, this);
+    setSourceImage(sourceImage);
+}
+
 
 void SessionManager::setSourceImage(LayerImage* sourceImage)
 {

@@ -10,8 +10,10 @@ class Layer : public QObject
 public:
     explicit Layer(QString name, QImage image, QObject* parent = nullptr);
 
-    QString getName() const { return m_name; }
-    QImage* getImage() { return &m_image; }
+    QString name() const { return m_name; }
+    QImage* image() { return &m_image; }
+
+    void setPixel(int x, int y, QRgb color) { m_image.setPixel(QPoint(x, y), color); }
 
     bool isVisible() const { return m_visible; }
     void setVisible(bool visible);

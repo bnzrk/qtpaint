@@ -1,18 +1,15 @@
 #include "canvas.h"
 
-Canvas::Canvas(QWidget* parent) : QWidget{parent}, m_sourceImage{nullptr}
+Canvas::Canvas(QWidget* parent) :
+    QWidget{parent}
 {
     // setup widget
-    setMouseTracking(true);
-    setFixedSize(800, 600);
+    setMouseTracking(false);
+    hide();
 
     // setup pen
     m_penColors = { Qt::black, Qt::red, Qt::blue };
     m_penWidth = 3;
-
-    // setup background
-    m_background = QImage(this->size(), QImage::Format_ARGB32);
-    m_background.fill(QColor(32, 33, 36, 255));
 }
 
 Canvas::~Canvas()
@@ -20,11 +17,21 @@ Canvas::~Canvas()
 
 }
 
-void Canvas::setSourceImage(LayerImage *image)
+void Canvas::onSessionDeleted()
 {
-    m_sourceImage = image;
+    m_session = nullptr;
+    setMouseTracking(false);
+    hide();
+}
 
-    QObject::connect(m_sourceImage, &LayerImage::imageChanged, this, &Canvas::onImageChanged);
+void Canvas::setSessionManager(SessionManager* session)
+{
+    m_session = session;
+    QObject::connect(m_session, &SessionManager::sessionDeleted, this, &Canvas::onSessionDeleted);
+    QObject::connect(sourceImage(), &LayerImage::imageChanged, this, &Canvas::onImageChanged);
+    setFixedSize(sourceImage()->size());
+    setMouseTracking(true);
+    show();
 }
 
 void Canvas::mousePressEvent(QMouseEvent* event)
@@ -34,11 +41,6 @@ void Canvas::mousePressEvent(QMouseEvent* event)
         m_isDrawing = true;
         m_lastPosition = m_currentPosition = event->position();
         draw();
-    }
-    else if(event->button() == Qt::MiddleButton)
-    {
-        m_activeLayer = (m_activeLayer + 1) % m_sourceImage->layers().size();
-        qDebug() << "current layer: " << m_sourceImage->getLayerAtIndex(m_activeLayer)->getName();
     }
     event->ignore();
 }
@@ -120,6 +122,9 @@ QRect Canvas::mapRectToWidget(const QRect& rect) const
 // Draws a line from the previous mouse position to the current mouse position on the active canvas layer and updates the affected widget region.
 void Canvas::draw()
 {
+    if (!m_session)
+        return;
+
     int scale = pixelRatio();
 
     // snap mouse positions to points on widget pixel grid
@@ -140,10 +145,10 @@ void Canvas::draw()
     m_updateRegion.adjust(-adjustFactor, -adjustFactor, adjustFactor, adjustFactor);
 
     // setup pen and draw between image points
-    QColor color = m_penColors[m_activeLayer % m_penColors.size()];
+    QColor color = m_penColors[m_session->activeLayer() % m_penColors.size()];
     QPen pen(color, m_penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     QPainter painter;
-    painter.begin(m_sourceImage->getLayerAtIndex(m_activeLayer)->getImage());
+    painter.begin(sourceImage()->layerAtIndex(m_session->activeLayer())->image());
     painter.setPen(pen);
     painter.drawLine(prevOnImage, curOnImage);
     painter.end();
@@ -154,6 +159,9 @@ void Canvas::draw()
 
 void Canvas::paintEvent(QPaintEvent* event)
 {
+    if (!m_session)
+        return;
+
     QPainter painter(this);
 
     // expand paint region to fit widget pixel grid
@@ -161,10 +169,10 @@ void Canvas::paintEvent(QPaintEvent* event)
     QRect imageRegion = mapRectToImage(paintRegion);
 
     // draw canvas layers from paint region
-    for (int i = 0; i < m_sourceImage->getLayerCount(); i++)
+    for (int i = 0; i < sourceImage()->layerCount(); i++)
     {
-        if (m_sourceImage->getLayerAtIndex(i)->isVisible())
-            painter.drawImage(paintRegion, *(m_sourceImage->getLayerAtIndex(i)->getImage()), imageRegion);
+        if (sourceImage()->layerAtIndex(i)->isVisible())
+            painter.drawImage(paintRegion, *(sourceImage()->layerAtIndex(i)->image()), imageRegion);
     }
     painter.end();
 

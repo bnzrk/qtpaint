@@ -2,9 +2,10 @@
 
 Viewport::Viewport(QWidget *parent) :
     QScrollArea(parent),
+    m_canvas(Canvas(this)),
     m_background(QWidget(this)),
     m_layout(QBoxLayout(QBoxLayout::LeftToRight, &m_background)),
-    m_canvas(Canvas(&m_background)), m_zoom(1)
+    m_zoom(1)
 {
     // setup shortcuts
     QShortcut *zoomInShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), this);
@@ -18,6 +19,7 @@ Viewport::Viewport(QWidget *parent) :
     m_background.setLayout(&m_layout);
     QString style = "background-color: #404142; ";
     m_background.setStyleSheet(style);
+    m_layout.addWidget(&m_canvas, Qt::AlignCenter);
     setWidget(&m_background);
     setZoom(1);
 }
@@ -33,26 +35,27 @@ void Viewport::resizeEvent(QResizeEvent* event)
 void Viewport::showEvent(QShowEvent* event)
 {
     QScrollArea::showEvent(event);
+    m_background.setFixedSize(parentWidget()->size());
+    updateView();
     centerView();
 }
 
-// Sets the image to be displayed in the viewport.
-void Viewport::setSourceImage(LayerImage* image)
+void Viewport::setSessionManager(SessionManager* session)
 {
-    m_sourceImage = image;
-    m_canvas.setSourceImage(image);
-    m_layout.addWidget(&m_canvas, Qt::AlignCenter);
-    updateDisplay();
+    m_session = session;
+    QObject::connect(m_session, &SessionManager::sessionDeleted, this, &Viewport::onSessionDeleted);
+    m_canvas.setSessionManager(m_session);
+    updateView();
     centerView();
 }
 
 // Updates display of child widgets based on source image and zoom.
-void Viewport::updateDisplay()
+void Viewport::updateView()
 {
-    if (m_sourceImage)
+    if (m_session)
     {
         // calculate canvas size based on zoom level
-        QSize canvasSize = m_sourceImage->getSize() * m_zoom;
+        QSize canvasSize = sourceImage()->size() * m_zoom;
 
         // calculate and update viewport background size
         int largestLen = std::max(canvasSize.width(), canvasSize.height()) * 2;
@@ -64,13 +67,12 @@ void Viewport::updateDisplay()
         // update canvas
         m_canvas.setFixedSize(canvasSize);
         m_canvas.update();
+        this->setMaximumWidth(m_background.size().width());
     }
-    else if (parentWidget())
+    else
     {
-        // set viewport background to default size
-        //m_background.setFixedSize(parentWidget()->size());
+        m_background.setFixedSize(size());
     }
-    this->setMaximumWidth(m_background.size().width());
 }
 
 // Sets the viewport's zoom level.
@@ -83,14 +85,14 @@ void Viewport::setZoom(int zoom)
     QPoint scrollAmount = QPoint();
 
     // calculate new viewport position based on mouse position if canvas visible
-    if (m_sourceImage)
+    if (m_session)
     {
         QPoint mousePos = m_background.mapFromGlobal(QCursor::pos());
         QPoint unscaledMouseDist = mousePos / prevZoom - m_canvas.pos() / prevZoom;
         scrollAmount = unscaledMouseDist * m_zoom - unscaledMouseDist * prevZoom;
     }
 
-    updateDisplay();
+    updateView();
 
     // update scroll bar values
     horizontalScrollBar()->setValue(scrollPosition.x() + scrollAmount.x());
@@ -106,6 +108,9 @@ void Viewport::centerView()
 // Zooms in the viewport by one step.
 void Viewport::zoomIn()
 {
+    if (!m_session)
+        return;
+
     if (m_zoom < MAX_ZOOM)
         setZoom(m_zoom + 1);
 }
@@ -113,6 +118,9 @@ void Viewport::zoomIn()
 // Zooms out the viewport by one step.
 void Viewport::zoomOut()
 {
+    if (!m_session)
+        return;
+
     if (m_zoom > 1)
         setZoom(m_zoom - 1);
 }
