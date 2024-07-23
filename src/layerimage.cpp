@@ -20,10 +20,7 @@ void LayerImage::swapLayers(int a, int b)
 
 void LayerImage::initializeImage()
 {
-    for (int i = 0; i < 3; i++)
-    {
-        createNewLayer();
-    }
+    createNewLayer();
 }
 
 void LayerImage::createNewLayer()
@@ -44,5 +41,29 @@ void LayerImage::createNewLayer()
     QObject::connect(layer, &Layer::layerChanged, this, &LayerImage::imageChanged);
     m_layers.push_back(layer);
     m_newLayerSuffix++;
+    emit imageChanged();
+}
+
+void LayerImage::createNewLayer(int index)
+{
+    QString name = "Layer ";
+    name.append(QString::number(m_newLayerSuffix));
+    QImage image = QImage(m_size, QImage::Format_ARGB32);
+
+    image.fill(QColor(255, 255, 255, 0));
+
+    Layer* layer = new Layer(name, image, this);
+    QObject::connect(layer, &Layer::layerChanged, this, &LayerImage::imageChanged);
+
+    m_layers.insert(index, layer);
+
+    m_newLayerSuffix++;
+    emit imageChanged();
+}
+
+void LayerImage::removeLayer(int index)
+{
+    Layer* layer = m_layers.takeAt(index);
+    delete layer;
     emit imageChanged();
 }

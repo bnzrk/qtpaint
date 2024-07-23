@@ -18,6 +18,8 @@ public:
     void initializeImage();
 
     void createNewLayer();
+    void createNewLayer(int index);
+    void removeLayer(int index);
     void swapLayers(int a, int b);
     void toggleLayerVisible(int index);
 

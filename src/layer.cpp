@@ -22,3 +22,8 @@ void Layer::toggleVisible()
     m_visible = !m_visible;
     emit layerChanged();
 }
+
+void Layer::fill(QRgb fillColor)
+{
+    m_image.fill(fillColor);
+}

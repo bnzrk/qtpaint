@@ -14,6 +14,7 @@ public:
     QImage* image() { return &m_image; }
 
     void setPixel(int x, int y, QRgb color) { m_image.setPixel(QPoint(x, y), color); }
+    void fill(QRgb fillColor);
 
     bool isVisible() const { return m_visible; }
     void setVisible(bool visible);

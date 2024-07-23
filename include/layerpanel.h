@@ -27,12 +27,15 @@ public slots:
     void onMoveUpRequested(LayerPanelItem* sender);
     void onMoveDownRequested(LayerPanelItem* sender);
     void onItemClicked(LayerPanelItem* sender);
+    void onNewLayerClicked();
+    void onRemoveLayerClicked();
 private:
     void swapLayers(int a, int b);
     void toggleLayerVisibility(int index);
 
     void populateItems();
     void addItem(const Layer& reference);
+    void removeItem(int index);
     void updateItemDisplay(int index);
 
     int getIndexOf(const LayerPanelItem* item) const;

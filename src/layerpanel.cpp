@@ -7,6 +7,9 @@ LayerPanel::LayerPanel(QWidget *parent)
 {
     ui->setupUi(this);
     m_items = QVector<LayerPanelItem*>();
+
+    QObject::connect(ui->newLayerButton, &QPushButton::clicked, this, &LayerPanel::onNewLayerClicked);
+    QObject::connect(ui->removeLayerButton, &QPushButton::clicked, this, &LayerPanel::onRemoveLayerClicked);
 }
 
 LayerPanel::~LayerPanel()
@@ -18,12 +21,47 @@ void LayerPanel::onSessionDeleted()
 {
     m_session = nullptr;
     m_items.clear();
-    while(auto item = ui->verticalLayout->takeAt(0))
+    while(auto item = ui->itemLayout->takeAt(0))
     {
-        if (item->widget())
-            delete item->widget();
-        else
-            delete item->spacerItem();
+        delete item->widget();
+    }
+    ui->newLayerButton->setEnabled(false);
+    ui->removeLayerButton->setEnabled(false);
+}
+
+void LayerPanel::onNewLayerClicked()
+{
+    if (sourceImage()->layerCount() < 2)
+    {
+        ui->removeLayerButton->setEnabled(true);
+    }
+
+    int index = m_session->activeLayer() + 1;
+    m_items[m_session->activeLayer()]->deselect();
+    m_session->setActiveLayer(index);
+    sourceImage()->createNewLayer(index);
+    addItem(*sourceImage()->layerAtIndex(index));
+    m_items[index]->select();
+}
+
+void LayerPanel::onRemoveLayerClicked()
+{
+    int index = m_session->activeLayer();
+    int newActive = index;
+
+    if (index == sourceImage()->layerCount() - 1)
+        newActive = index - 1;
+
+    m_session->setActiveLayer(newActive);
+
+    sourceImage()->removeLayer(index);
+    removeItem(index);
+
+    m_items[newActive]->select();
+
+    if (sourceImage()->layerCount() < 2)
+    {
+        ui->removeLayerButton->setEnabled(false);
     }
 }
 
@@ -36,17 +74,17 @@ void LayerPanel::onVisibilityToggled(LayerPanelItem* sender)
 void LayerPanel::onMoveUpRequested(LayerPanelItem* sender)
 {
     int senderIndex = getIndexOf(sender);
-    if (senderIndex < 1)
+    if (senderIndex >= sourceImage()->layerCount() - 1)
         return;
-    swapLayers(senderIndex, senderIndex - 1);
+    swapLayers(senderIndex, senderIndex + 1);
 }
 
 void LayerPanel::onMoveDownRequested(LayerPanelItem* sender)
 {
     int senderIndex = getIndexOf(sender);
-    if (senderIndex >= sourceImage()->layerCount() - 1)
+    if (senderIndex < 1)
         return;
-    swapLayers(senderIndex, senderIndex + 1);
+    swapLayers(senderIndex, senderIndex - 1);
 }
 
 void LayerPanel::onItemClicked(LayerPanelItem* sender)
@@ -63,6 +101,7 @@ void LayerPanel::setSessionManager(SessionManager* session)
     m_session = session;
     QObject::connect(m_session, &SessionManager::sessionDeleted, this, &LayerPanel::onSessionDeleted);
     populateItems();
+    ui->newLayerButton->setEnabled(true);
 }
 
 void LayerPanel::updateItemDisplay(int index)
@@ -103,7 +142,14 @@ void LayerPanel::addItem(const Layer& reference)
     QObject::connect(item, &LayerPanelItem::visibleButtonToggled, this, &LayerPanel::onVisibilityToggled);
     QObject::connect(item, &LayerPanelItem::clicked, this, &LayerPanel::onItemClicked);
 
-    ui->verticalLayout->addWidget(item);
+    ui->itemLayout->insertWidget(0, item);
+}
+
+void LayerPanel::removeItem(int index)
+{
+    auto item = m_items.takeAt(index);
+    ui->itemLayout->removeWidget(item);
+    delete item;
 }
 
 int LayerPanel::getIndexOf(const LayerPanelItem* item) const
@@ -122,8 +168,6 @@ void LayerPanel::populateItems()
     {
         addItem(*(sourceImage()->layerAtIndex(i)));
     }
-    QSpacerItem* spacer = new QSpacerItem(20, 40, QSizePolicy::Expanding, QSizePolicy::Expanding);
-    ui->verticalLayout->addSpacerItem(spacer);
 
     m_session->addSelectedLayer(0);
     m_session->setActiveLayer(0);
