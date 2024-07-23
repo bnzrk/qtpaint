@@ -7,31 +7,90 @@ Viewport::Viewport(QWidget *parent) :
     m_layout(QBoxLayout(QBoxLayout::LeftToRight, &m_background)),
     m_zoom(1)
 {
-    // setup shortcuts
+    // setup signals and slots
     QShortcut *zoomInShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), this);
     QObject::connect(zoomInShortcut, &QShortcut::activated, this, &Viewport::zoomIn);
 
     QShortcut *zoomOutShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), this);
     QObject::connect(zoomOutShortcut, &QShortcut::activated, this, &Viewport::zoomOut);
 
+    QObject::connect(this, &Viewport::childMouseInputEnabled, &m_canvas, &Canvas::onMouseInputEnabled);
+    QObject::connect(this, &Viewport::childMouseInputDisabled, &m_canvas, &Canvas::onMouseInputDisabled);
+
     // setup widgets and layout
     setWidgetResizable(true);
     m_background.setLayout(&m_layout);
-    QString style = "background-color: #404142; ";
+    QString style = "background-color: #404142;";
     m_background.setStyleSheet(style);
     m_layout.addWidget(&m_canvas, Qt::AlignCenter);
     setWidget(&m_background);
     setZoom(1);
 }
 
-// Event override.
+void Viewport::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
+    {
+        emit childMouseInputDisabled();
+        m_panMode = true;
+        setCursor(Qt::OpenHandCursor);
+    }
+}
+
+void Viewport::keyReleaseEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
+    {
+        m_panMode = false;
+        if (!m_panning)
+        {
+            emit childMouseInputEnabled();
+            setCursor(Qt::ArrowCursor);
+        }
+    }
+}
+
+void Viewport::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton && m_panMode)
+    {
+        m_lastMousePosition = m_background.mapFromParent(event->pos());
+        m_panning = true;
+        setCursor(Qt::ClosedHandCursor);
+    }
+}
+
+void Viewport::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton && m_panning)
+    {
+        m_panning = false;
+        if (m_panMode)
+            setCursor(Qt::OpenHandCursor);
+        else
+        {
+            emit childMouseInputEnabled();
+            setCursor(Qt::ArrowCursor);
+        }
+    }
+}
+
+void Viewport::mouseMoveEvent(QMouseEvent* event)
+{
+    if (m_panning)
+    {
+        QPoint delta = m_background.mapFromParent(event->pos()) - m_lastMousePosition;
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+    }
+}
+
 void Viewport::resizeEvent(QResizeEvent* event)
 {
     QScrollArea::resizeEvent(event);
     centerView();
 }
 
-// Event override.
 void Viewport::showEvent(QShowEvent* event)
 {
     QScrollArea::showEvent(event);
@@ -40,6 +99,7 @@ void Viewport::showEvent(QShowEvent* event)
     centerView();
 }
 
+// Sets the current session manager.
 void Viewport::setSessionManager(SessionManager* session)
 {
     m_session = session;

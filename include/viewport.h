@@ -16,6 +16,11 @@ public:
 
     virtual void showEvent(QShowEvent* event) override;
     virtual void resizeEvent(QResizeEvent* event) override;
+    virtual void keyPressEvent(QKeyEvent* event) override;
+    virtual void keyReleaseEvent(QKeyEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
 
     void setSourceImage(LayerImage *image);
     void setSessionManager(SessionManager* session);
@@ -31,6 +36,9 @@ public:
     static const int MAX_ZOOM = 10;
 public slots:
     void onSessionDeleted() { m_session = nullptr; }
+signals:
+    void childMouseInputEnabled();
+    void childMouseInputDisabled();
 private:
     LayerImage* sourceImage() const { return m_session->sourceImage(); }
 private:
@@ -40,6 +48,9 @@ private:
     Canvas m_canvas;
 
     double m_zoom;
+    bool m_panMode = false;
+    bool m_panning = false;
+    QPoint m_lastMousePosition;
 };
 
 #endif // VIEWPORT_H

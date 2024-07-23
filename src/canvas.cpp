@@ -30,45 +30,89 @@ void Canvas::setSessionManager(SessionManager* session)
     QObject::connect(m_session, &SessionManager::sessionDeleted, this, &Canvas::onSessionDeleted);
     QObject::connect(sourceImage(), &LayerImage::imageChanged, this, &Canvas::onImageChanged);
     setFixedSize(sourceImage()->size());
+
+    // generate background
+    m_background = QPixmap(sourceImage()->size());
+    QPainter painter(&m_background);
+    QBrush brush;
+    brush.setTexture(generateBackgroundPattern());
+    painter.fillRect(m_background.rect(), brush);
+
     setMouseTracking(true);
     show();
 }
 
+void Canvas::onMouseInputEnabled()
+{
+    m_acceptMouseInput = true;
+}
+
+void Canvas::onMouseInputDisabled()
+{
+    m_acceptMouseInput = false;
+}
+
 void Canvas::mousePressEvent(QMouseEvent* event)
 {
-    if(event->button() == Qt::LeftButton && !m_isDrawing)
+    if (m_acceptMouseInput)
     {
-        m_isDrawing = true;
-        m_lastPosition = m_currentPosition = event->position();
-        draw();
+        if(event->button() == Qt::LeftButton && !m_isDrawing)
+        {
+            m_isDrawing = true;
+            m_lastMousePosition = m_currentMousePosition = event->position();
+            draw();
+        }
     }
     event->ignore();
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent* event)
 {
-    if(m_isDrawing)
+    if (m_acceptMouseInput)
     {
-        m_currentPosition = event->position();
-        if (m_lastPosition != m_currentPosition)
-            draw();
-        m_lastPosition = m_currentPosition;
+        if(m_isDrawing)
+        {
+            m_currentMousePosition = event->position();
+            if (m_lastMousePosition != m_currentMousePosition)
+                draw();
+            m_lastMousePosition = m_currentMousePosition;
+        }
     }
     event->ignore();
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent* event)
 {
-    if(event->button() == Qt::LeftButton && m_isDrawing)
+    if (m_acceptMouseInput)
     {
-        m_currentPosition = event->position();
-        draw();
-        m_isDrawing = false;
-        update();
+        if(event->button() == Qt::LeftButton && m_isDrawing)
+        {
+            m_currentMousePosition = event->position();
+            draw();
+            m_isDrawing = false;
+            update();
+        }
     }
     event->ignore();
 }
 
+// Generates a grid pattern using the given grid size and colors.
+QPixmap Canvas::generateBackgroundPattern(const QSize &gridSize, const QColor &backgroundColor, const QColor &foregroundColor) const
+{
+    QPixmap pattern = QPixmap(gridSize * 2);
+    QPainter painter(&pattern);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(backgroundColor);
+    painter.drawRect(0, 0, 8, 8);
+    painter.drawRect(8, 8, 8, 8);
+    painter.setBrush(foregroundColor);
+    painter.drawRect(8, 0, 8, 8);
+    painter.drawRect(0, 8, 8, 8);
+    painter.end();
+    return pattern;
+}
+
+// Snaps the given position to the displayed pixel grid.
 QPoint Canvas::snapPointToGrid(const QPoint& point) const
 {
     int scale = pixelRatio();
@@ -128,8 +172,8 @@ void Canvas::draw()
     int scale = pixelRatio();
 
     // snap mouse positions to points on widget pixel grid
-    QPoint prevOnWidget = snapPointToGrid(m_lastPosition.toPoint());
-    QPoint curOnWidget = snapPointToGrid(m_currentPosition.toPoint());
+    QPoint prevOnWidget = snapPointToGrid(m_lastMousePosition.toPoint());
+    QPoint curOnWidget = snapPointToGrid(m_currentMousePosition.toPoint());
 
     // map widget points to image points
     QPoint prevOnImage = mapPointToImage(prevOnWidget);
@@ -168,6 +212,7 @@ void Canvas::paintEvent(QPaintEvent* event)
     QRect paintRegion = fitRectToPixel(event->rect());
     QRect imageRegion = mapRectToImage(paintRegion);
 
+    painter.drawPixmap(paintRegion, m_background, imageRegion);
     // draw canvas layers from paint region
     for (int i = 0; i < sourceImage()->layerCount(); i++)
     {

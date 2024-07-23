@@ -40,6 +40,11 @@ private:
     QRect mapRectToWidget(const QRect& rect) const;
 
     LayerImage* sourceImage() const { return m_session->sourceImage(); }
+public slots:
+    void onMouseInputEnabled();
+    void onMouseInputDisabled();
+private:
+    QPixmap generateBackgroundPattern(const QSize &gridSize=QSize(8, 8), const QColor &backgroundColor=QColor(234, 234, 234), const QColor &foregroundColor=QColor(181, 181, 181)) const;
 private:
     // Session
     SessionManager* m_session = nullptr;
@@ -47,17 +52,20 @@ private:
     // Settings
     QVector<QColor> m_penColors;
     int m_penWidth = 1;
+    QPixmap m_background;
+
+    // Input
+    bool m_acceptMouseInput = true;
 
     // Drawing
-    QPointF m_lastPosition;
-    QPointF m_currentPosition;
+    QPointF m_lastMousePosition;
+    QPointF m_currentMousePosition;
     QRect m_updateRegion;
     bool m_isDrawing = false;
 
     // debug
     std::chrono::high_resolution_clock::time_point m_drawStartTime;
     std::chrono::high_resolution_clock::time_point m_drawEndTime;
-signals:
 };
 
 #endif // CANVAS_H
