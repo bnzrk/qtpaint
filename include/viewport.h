@@ -21,6 +21,7 @@ public:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
 
     void setSourceImage(LayerImage *image);
     void setSessionManager(SessionManager* session);
@@ -50,6 +51,7 @@ private:
     double m_zoom;
     bool m_panMode = false;
     bool m_panning = false;
+    bool m_wheelZoomMode = false;
     QPoint m_lastMousePosition;
 };
 

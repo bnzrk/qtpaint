@@ -29,7 +29,13 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
+    if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
+    {
+        horizontalScrollBar()->blockSignals(true);
+        verticalScrollBar()->blockSignals(true);
+        m_wheelZoomMode = true;
+    }
+    else if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
     {
         emit childMouseInputDisabled();
         m_panMode = true;
@@ -39,7 +45,13 @@ void Viewport::keyPressEvent(QKeyEvent* event)
 
 void Viewport::keyReleaseEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
+    if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
+    {
+        horizontalScrollBar()->blockSignals(false);
+        verticalScrollBar()->blockSignals(false);
+        m_wheelZoomMode = false;
+    }
+    else if (event->key() == Qt::Key_Space && !event->isAutoRepeat())
     {
         m_panMode = false;
         if (!m_panning)
@@ -82,6 +94,17 @@ void Viewport::mouseMoveEvent(QMouseEvent* event)
         QPoint delta = m_background.mapFromParent(event->pos()) - m_lastMousePosition;
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
         verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+    }
+}
+
+void Viewport::wheelEvent(QWheelEvent* event)
+{
+    if (m_wheelZoomMode)
+    {
+        if (event->angleDelta().y() > 0)
+            zoomIn();
+        else if (event->angleDelta().y() < 0)
+            zoomOut();
     }
 }
 
