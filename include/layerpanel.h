@@ -2,6 +2,7 @@
 #define LAYERPANEL_H
 
 #include <QWidget>
+#include <QScrollBar>
 #include "layerimage.h"
 #include "layerpanelitem.h"
 #include "sessionmanager.h"
@@ -18,6 +19,8 @@ class LayerPanel : public QWidget
 public:
     explicit LayerPanel(QWidget* parent = nullptr);
     ~LayerPanel();
+
+    virtual void showEvent(QShowEvent* event) override;
 
     void setSourceImage(LayerImage* sourceImage);
     void setSessionManager(SessionManager* session);

@@ -17,6 +17,13 @@ LayerPanel::~LayerPanel()
     delete ui;
 }
 
+void LayerPanel::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    ui->scrollArea->setMinimumWidth(ui->scrollArea->verticalScrollBar()->sizeHint().width() + 142);
+    setMinimumWidth(ui->scrollArea->minimumWidth() + ui->horizontalSpacer1->minimumSize().width() + ui->horizontalSpacer2->minimumSize().width());
+}
+
 void LayerPanel::onSessionDeleted()
 {
     m_session = nullptr;
