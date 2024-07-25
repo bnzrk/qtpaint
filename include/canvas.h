@@ -15,6 +15,7 @@ public:
     ~Canvas();
     
     void setSessionManager(SessionManager* session);
+    bool drawing() const { return m_isDrawing; }
 public slots:
     void onImageChanged() { update(); }
     void onSessionDeleted();

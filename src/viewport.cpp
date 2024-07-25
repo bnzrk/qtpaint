@@ -29,6 +29,9 @@ Viewport::Viewport(QWidget *parent) :
 
 void Viewport::keyPressEvent(QKeyEvent* event)
 {
+    if (m_canvas.drawing())
+        return;
+
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
     {
         horizontalScrollBar()->blockSignals(true);
@@ -64,6 +67,9 @@ void Viewport::keyReleaseEvent(QKeyEvent* event)
 
 void Viewport::mousePressEvent(QMouseEvent* event)
 {
+    if (m_canvas.drawing())
+        return;
+
     if (event->button() == Qt::LeftButton && m_panMode)
     {
         m_lastMousePosition = m_background.mapFromParent(event->pos());

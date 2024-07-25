@@ -169,6 +169,9 @@ void Canvas::draw()
     if (!m_session)
         return;
 
+    if (!sourceImage()->layerAtIndex(m_session->activeLayer())->isVisible())
+        return;
+
     int scale = pixelRatio();
 
     // snap mouse positions to points on widget pixel grid
