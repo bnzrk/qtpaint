@@ -2,8 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "viewport.h"
-#include "sessionmanager.h"
+#include "canvasviewport.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,8 +19,8 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    SessionManager* m_session = nullptr;
-    Viewport* m_viewport = nullptr;
+    Canvas* m_canvas;
+    CanvasViewport* m_viewport;
 };
 
 #endif // MAINWINDOW_H

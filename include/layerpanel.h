@@ -3,9 +3,8 @@
 
 #include <QWidget>
 #include <QScrollBar>
-#include "layerimage.h"
+#include "canvas.h"
 #include "layerpanelitem.h"
-#include "sessionmanager.h"
 
 namespace Ui
 {
@@ -19,13 +18,12 @@ class LayerPanel : public QWidget
 public:
     explicit LayerPanel(QWidget* parent = nullptr);
     ~LayerPanel();
+    void cleanup();
 
     virtual void showEvent(QShowEvent* event) override;
 
-    void setSourceImage(LayerImage* sourceImage);
-    void setSessionManager(SessionManager* session);
+    void setCanvas(Canvas* canvas);
 public slots:
-    void onSessionDeleted();
     void onVisibilityToggled(LayerPanelItem* sender);
     void onMoveUpRequested(LayerPanelItem* sender);
     void onMoveDownRequested(LayerPanelItem* sender);
@@ -43,12 +41,10 @@ private:
 
     int getIndexOf(const LayerPanelItem* item) const;
     LayerPanelItem* getItemAtIndex(int index);
-
-    LayerImage* sourceImage() const { return m_session->sourceImage(); }
 private:
     Ui::LayerPanel* ui;
 
-    SessionManager* m_session = nullptr;
+    Canvas* m_canvas;
     QVector<LayerPanelItem*> m_items;
 };
 

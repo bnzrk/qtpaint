@@ -1,35 +1,55 @@
-#include "viewport.h"
+#include "canvasviewport.h"
 
-Viewport::Viewport(QWidget *parent) :
+CanvasViewport::CanvasViewport(QWidget *parent) :
     QScrollArea(parent),
-    m_canvas(Canvas(this)),
-    m_background(QWidget(this)),
-    m_layout(QBoxLayout(QBoxLayout::LeftToRight, &m_background)),
     m_zoom(1)
 {
+    m_background = new QWidget(this);
+    m_layout = new QBoxLayout(QBoxLayout::LeftToRight, m_background);
+    m_canvasWidget = new CanvasWidget(this);
+
     // setup signals and slots
     QShortcut *zoomInShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), this);
-    QObject::connect(zoomInShortcut, &QShortcut::activated, this, &Viewport::zoomIn);
+    QObject::connect(zoomInShortcut, &QShortcut::activated, this, &CanvasViewport::zoomIn);
 
     QShortcut *zoomOutShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), this);
-    QObject::connect(zoomOutShortcut, &QShortcut::activated, this, &Viewport::zoomOut);
+    QObject::connect(zoomOutShortcut, &QShortcut::activated, this, &CanvasViewport::zoomOut);
 
-    QObject::connect(this, &Viewport::childMouseInputEnabled, &m_canvas, &Canvas::onMouseInputEnabled);
-    QObject::connect(this, &Viewport::childMouseInputDisabled, &m_canvas, &Canvas::onMouseInputDisabled);
+    QObject::connect(this, &CanvasViewport::childMouseInputEnabled, m_canvasWidget, &CanvasWidget::onMouseInputEnabled);
+    QObject::connect(this, &CanvasViewport::childMouseInputDisabled, m_canvasWidget, &CanvasWidget::onMouseInputDisabled);
 
     // setup widgets and layout
     setWidgetResizable(true);
-    m_background.setLayout(&m_layout);
+    m_background->setLayout(m_layout);
     QString style = "background-color: #404142;";
-    m_background.setStyleSheet(style);
-    m_layout.addWidget(&m_canvas, Qt::AlignCenter);
-    setWidget(&m_background);
-    setZoom(1);
+    m_background->setStyleSheet(style);
+    m_layout->addWidget(m_canvasWidget, Qt::AlignCenter);
+    setWidget(m_background);
 }
 
-void Viewport::keyPressEvent(QKeyEvent* event)
+CanvasViewport::~CanvasViewport()
 {
-    if (m_canvas.drawing())
+}
+
+void CanvasViewport::setCanvas(Canvas* canvas)
+{
+    m_canvas = canvas;
+    m_canvasWidget->setCanvas(m_canvas);
+
+    if (!m_canvas)
+    {
+        hide();
+        return;
+    }
+
+    setZoom(1);
+    updateView();
+    centerView();
+}
+
+void CanvasViewport::keyPressEvent(QKeyEvent* event)
+{
+    if (m_canvasWidget->drawing())
         return;
 
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
@@ -46,7 +66,7 @@ void Viewport::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void Viewport::keyReleaseEvent(QKeyEvent* event)
+void CanvasViewport::keyReleaseEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
     {
@@ -65,20 +85,20 @@ void Viewport::keyReleaseEvent(QKeyEvent* event)
     }
 }
 
-void Viewport::mousePressEvent(QMouseEvent* event)
+void CanvasViewport::mousePressEvent(QMouseEvent* event)
 {
-    if (m_canvas.drawing())
+    if (m_canvasWidget->drawing())
         return;
 
     if (event->button() == Qt::LeftButton && m_panMode)
     {
-        m_lastMousePosition = m_background.mapFromParent(event->pos());
+        m_lastMousePosition = m_background->mapFromParent(event->pos());
         m_panning = true;
         setCursor(Qt::ClosedHandCursor);
     }
 }
 
-void Viewport::mouseReleaseEvent(QMouseEvent* event)
+void CanvasViewport::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton && m_panning)
     {
@@ -93,17 +113,17 @@ void Viewport::mouseReleaseEvent(QMouseEvent* event)
     }
 }
 
-void Viewport::mouseMoveEvent(QMouseEvent* event)
+void CanvasViewport::mouseMoveEvent(QMouseEvent* event)
 {
     if (m_panning)
     {
-        QPoint delta = m_background.mapFromParent(event->pos()) - m_lastMousePosition;
+        QPoint delta = m_background->mapFromParent(event->pos()) - m_lastMousePosition;
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
         verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
     }
 }
 
-void Viewport::wheelEvent(QWheelEvent* event)
+void CanvasViewport::wheelEvent(QWheelEvent* event)
 {
     if (m_wheelZoomMode)
     {
@@ -114,58 +134,48 @@ void Viewport::wheelEvent(QWheelEvent* event)
     }
 }
 
-void Viewport::resizeEvent(QResizeEvent* event)
+void CanvasViewport::resizeEvent(QResizeEvent* event)
 {
     QScrollArea::resizeEvent(event);
     centerView();
 }
 
-void Viewport::showEvent(QShowEvent* event)
+void CanvasViewport::showEvent(QShowEvent* event)
 {
     QScrollArea::showEvent(event);
-    m_background.setFixedSize(parentWidget()->size());
-    updateView();
-    centerView();
-}
-
-// Sets the current session manager.
-void Viewport::setSessionManager(SessionManager* session)
-{
-    m_session = session;
-    QObject::connect(m_session, &SessionManager::sessionDeleted, this, &Viewport::onSessionDeleted);
-    m_canvas.setSessionManager(m_session);
+    m_background->setFixedSize(parentWidget()->size());
     updateView();
     centerView();
 }
 
 // Updates display of child widgets based on source image and zoom.
-void Viewport::updateView()
+void CanvasViewport::updateView()
 {
-    if (m_session)
+    if (m_canvas)
     {
         // calculate canvas size based on zoom level
-        QSize canvasSize = sourceImage()->size() * m_zoom;
+        QSize canvasSize = m_canvas->size() * m_zoom;
 
-        // calculate and update viewport background size
+        // calculate and update CanvasViewport background size
         int largestLen = std::max(canvasSize.width(), canvasSize.height()) * 2;
         if (largestLen * 2 > largestLen + MAX_MARGIN_SIZE)
-            m_background.setFixedSize(canvasSize.width() + MAX_MARGIN_SIZE, canvasSize.height() + MAX_MARGIN_SIZE);
+            m_background->setFixedSize(canvasSize.width() + MAX_MARGIN_SIZE, canvasSize.height() + MAX_MARGIN_SIZE);
         else
-            m_background.setFixedSize(canvasSize.width() + largestLen, canvasSize.height() + largestLen);
+            m_background->setFixedSize(canvasSize.width() + largestLen, canvasSize.height() + largestLen);
 
         // update canvas
-        m_canvas.setFixedSize(canvasSize);
-        m_canvas.update();
-        this->setMaximumWidth(m_background.size().width());
+        m_canvasWidget->setFixedSize(canvasSize);
+        m_canvasWidget->update();
+        this->setMaximumWidth(m_background->size().width());
     }
     else
     {
-        m_background.setFixedSize(size());
+        m_background->setFixedSize(size());
     }
 }
 
-// Sets the viewport's zoom level.
-void Viewport::setZoom(int zoom)
+// Sets the CanvasViewport's zoom level.
+void CanvasViewport::setZoom(int zoom)
 {
     int prevZoom = m_zoom;
     m_zoom = zoom;
@@ -173,11 +183,11 @@ void Viewport::setZoom(int zoom)
     QPoint scrollPosition = QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value());
     QPoint scrollAmount = QPoint();
 
-    // calculate new viewport position based on mouse position if canvas visible
-    if (m_session)
+    // calculate new CanvasViewport position based on mouse position if canvas visible
+    if (m_canvas)
     {
-        QPoint mousePos = m_background.mapFromGlobal(QCursor::pos());
-        QPoint unscaledMouseDist = mousePos / prevZoom - m_canvas.pos() / prevZoom;
+        QPoint mousePos = m_background->mapFromGlobal(QCursor::pos());
+        QPoint unscaledMouseDist = mousePos / prevZoom - m_canvasWidget->pos() / prevZoom;
         scrollAmount = unscaledMouseDist * m_zoom - unscaledMouseDist * prevZoom;
     }
 
@@ -188,26 +198,26 @@ void Viewport::setZoom(int zoom)
     verticalScrollBar()->setValue(scrollPosition.y() + scrollAmount.y());
 }
 
-void Viewport::centerView()
+void CanvasViewport::centerView()
 {
     horizontalScrollBar()->setValue(horizontalScrollBar()->maximum() / 2);
     verticalScrollBar()->setValue(verticalScrollBar()->maximum() / 2);
 }
 
-// Zooms in the viewport by one step.
-void Viewport::zoomIn()
+// Zooms in the CanvasViewport by one step.
+void CanvasViewport::zoomIn()
 {
-    if (!m_session)
+    if (!m_canvas)
         return;
 
     if (m_zoom < MAX_ZOOM)
         setZoom(m_zoom + 1);
 }
 
-// Zooms out the viewport by one step.
-void Viewport::zoomOut()
+// Zooms out the CanvasViewport by one step.
+void CanvasViewport::zoomOut()
 {
-    if (!m_session)
+    if (!m_canvas)
         return;
 
     if (m_zoom > 1)

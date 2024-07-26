@@ -7,10 +7,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    m_session = new SessionManager(this);
+    m_canvas = new Canvas(800, 600, this);
 
-    ui->viewport->setSessionManager(m_session);
-    ui->layerPanel->setSessionManager(m_session);
+    ui->viewport->setCanvas(m_canvas);
+    ui->layerPanel->setCanvas(m_canvas);
 }
 
 MainWindow::~MainWindow()
