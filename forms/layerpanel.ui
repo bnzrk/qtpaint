@@ -98,7 +98,7 @@
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">QWidget#itemBackground { background-color: #E0E0E0; }</string>
+          <string notr="true"/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">

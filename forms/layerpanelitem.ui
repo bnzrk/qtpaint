@@ -365,7 +365,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: #BCBCBC;</string>
+        <string notr="true">background-color: black;</string>
        </property>
       </widget>
      </item>
