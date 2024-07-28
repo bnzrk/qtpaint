@@ -15,6 +15,13 @@ CanvasViewport::CanvasViewport(QWidget *parent) :
     QShortcut *zoomOutShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), this);
     QObject::connect(zoomOutShortcut, &QShortcut::activated, this, &CanvasViewport::zoomOut);
 
+    // TEMP UNDO/REDO
+    QShortcut *undoShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Z), this);
+    QObject::connect(undoShortcut, &QShortcut::activated, this, [=]{ m_canvas->undo(); m_canvasWidget->update(); });
+
+    QShortcut *redoShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Y), this);
+    QObject::connect(redoShortcut, &QShortcut::activated, this, [=]{ m_canvas->redo(); m_canvasWidget->update(); });
+
     QObject::connect(this, &CanvasViewport::childMouseInputEnabled, m_canvasWidget, &CanvasWidget::onMouseInputEnabled);
     QObject::connect(this, &CanvasViewport::childMouseInputDisabled, m_canvasWidget, &CanvasWidget::onMouseInputDisabled);
 

@@ -5,6 +5,8 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "canvas.h"
+#include "strokecommand.h"
+#include "stroke.h"
 
 class CanvasWidget : public QWidget
 {
@@ -19,6 +21,7 @@ public slots:
     void onMouseInputEnabled();
     void onMouseInputDisabled();
     void onCanvasChanged() { update(); }
+    void onCanvasImageChanged(QVector<int> dirtyLayers, QRect dirtyRegion);
 private:
     // Event Overrides
     virtual void paintEvent(QPaintEvent* event) override;
@@ -44,6 +47,7 @@ private:
 private:
     // Canvas
     Canvas* m_canvas;
+    Stroke m_stroke;
 
     // Settings
     QVector<QColor> m_penColors;

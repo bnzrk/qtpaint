@@ -2,19 +2,59 @@
 
 Canvas::Canvas(QSize size, QObject* parent) :
     QObject(parent),
-    m_size{size}
+    m_size{size},
+    m_undos{QStack<Command*>()},
+    m_redos{QStack<Command*>()}
 {
     initializeImage();
 }
 
 Canvas::~Canvas()
 {
-
+    for (auto c : m_undos)
+        delete c;
+    m_undos.clear();
+    for (auto c : m_redos)
+        delete c;
+    m_redos.clear();
 }
 
 void Canvas::initializeImage()
 {
     createNewLayer();
+}
+
+void Canvas::pushCommand(Command* command)
+{
+    if (!m_redos.empty())
+        m_redos.clear();
+
+    m_redos.push(command);
+    redo();
+}
+
+void Canvas::redo()
+{
+    if (m_redos.empty())
+        return;
+
+    Command* command = m_redos.pop();
+    m_undos.push(command);
+
+    command->execute();
+    //emit canvasChanged();
+}
+
+void Canvas::undo()
+{
+    if (m_undos.empty())
+        return;
+
+    Command* command = m_undos.pop();
+    m_redos.push(command);
+
+    command->revert();
+    //emit canvasChanged();
 }
 
 void Canvas::swapLayers(int a, int b)

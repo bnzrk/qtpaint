@@ -5,6 +5,8 @@
 #include <QImage>
 #include <QDebug>
 #include <QPainter>
+#include <QStack>
+#include "command.h"
 #include "layer.h"
 
 class Canvas : public QObject
@@ -31,14 +33,22 @@ public:
     int layerCount() const { return m_layers.size(); }
     Layer* layerAt(int index) { return m_layers[index]; }
     QSize size() const { return m_size; }
+
+    void pushCommand(Command* command);
+    void redo();
+    void undo();
 signals:
     void canvasChanged();
+    void canvasImageChanged(QVector<int> dirtyLayers, QRect diryRegion);
 private:
     QSize m_size;
 
     QVector<Layer*> m_layers;
     int m_activeLayer = 0;
     int m_newLayerSuffix = 1;
+
+    QStack<Command*> m_undos;
+    QStack<Command*> m_redos;
 };
 
 #endif // CANVAS_H

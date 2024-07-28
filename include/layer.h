@@ -21,6 +21,7 @@ public:
     void toggleVisible();
 signals:
     void layerChanged();
+    void layerImageChange(QRect affectedRegion);
 private:
     QString m_name;
     QImage m_image;

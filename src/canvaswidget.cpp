@@ -1,7 +1,8 @@
 #include "CanvasWidget.h"
 
 CanvasWidget::CanvasWidget(QWidget* parent) :
-    QWidget{parent}
+    QWidget{parent},
+    m_stroke{Stroke(QPen())}
 {
     // setup widget
     setMouseTracking(false);
@@ -28,7 +29,8 @@ void CanvasWidget::setCanvas(Canvas* canvas)
         return;
     }
 
-    QObject::connect(m_canvas, &Canvas::canvasChanged, this, &CanvasWidget::onCanvasChanged);
+    //QObject::connect(m_canvas, &Canvas::canvasChanged, this, &CanvasWidget::onCanvasChanged);
+    QObject::connect(m_canvas, &Canvas::canvasImageChanged, this, &CanvasWidget::onCanvasImageChanged);
     setFixedSize(canvas->size());
 
     // generate background
@@ -40,6 +42,11 @@ void CanvasWidget::setCanvas(Canvas* canvas)
 
     setMouseTracking(true);
     show();
+}
+
+void CanvasWidget::onCanvasImageChanged(QVector<int> dirtyLayers, QRect dirtyRegion)
+{
+    repaint(dirtyRegion);
 }
 
 void CanvasWidget::onMouseInputEnabled()
@@ -60,7 +67,11 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event)
         {
             m_isDrawing = true;
             m_lastMousePosition = m_currentMousePosition = event->position();
-            draw();
+
+            m_stroke = Stroke(QPen(m_penColors[m_canvas->activeLayer() % m_penColors.size()], m_penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            m_stroke.addPoint(mapPointToImage(snapPointToGrid(m_currentMousePosition.toPoint())));
+
+            //draw();
         }
     }
     event->ignore();
@@ -74,7 +85,10 @@ void CanvasWidget::mouseMoveEvent(QMouseEvent* event)
         {
             m_currentMousePosition = event->position();
             if (m_lastMousePosition != m_currentMousePosition)
-                draw();
+            {
+                m_stroke.addPoint(mapPointToImage(snapPointToGrid(m_currentMousePosition.toPoint())));
+                //draw();
+            }
             m_lastMousePosition = m_currentMousePosition;
         }
     }
@@ -88,7 +102,8 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event)
         if(event->button() == Qt::LeftButton && m_isDrawing)
         {
             m_currentMousePosition = event->position();
-            draw();
+            m_canvas->pushCommand(new StrokeCommand(m_canvas, m_canvas->activeLayer(), m_stroke));
+            //draw();
             m_isDrawing = false;
             update();
         }
