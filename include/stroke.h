@@ -7,7 +7,7 @@
 #include <QRect>
 
 /*
- * Holds data for a stroke such as its pen, path, bounding rect, etc.
+ * Holds information about a stroke such as its pen, path, bounding rect, etc.
  */
 class Stroke
 {
@@ -19,9 +19,18 @@ public:
     QPainterPath path() const { return m_path; }
     void addPoint(const QPoint &point);
     QRect boundingRect() const;
+    QPoint previous() const { return m_previous; }
+    QPoint current() const { return m_current; }
 private:
-    QPen m_pen;
+    // Path
     QPainterPath m_path;
+    QPoint m_previous;
+    QPoint m_current;
+
+    // Settings
+    QPen m_pen;
+
+
 };
 
 #endif // STROKE_H

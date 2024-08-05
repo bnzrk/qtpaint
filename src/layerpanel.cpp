@@ -130,6 +130,8 @@ void LayerPanel::updateItemDisplay(int index)
 void LayerPanel::toggleLayerVisibility(int index)
 {
     m_canvas->layerAt(index)->toggleVisible();
+
+    emit m_canvas->canvasImageChanged(index, m_canvas->layerAt(index)->image()->rect());
 }
 
 void LayerPanel::swapLayers(int a, int b)

@@ -5,8 +5,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "canvas.h"
-#include "strokecommand.h"
-#include "stroke.h"
+#include "pentool.h"
 
 class CanvasWidget : public QWidget
 {
@@ -16,12 +15,11 @@ public:
     ~CanvasWidget();
     
     void setCanvas(Canvas* canvas);
-    bool drawing() const { return m_isDrawing; }
 public slots:
     void onMouseInputEnabled();
     void onMouseInputDisabled();
     void onCanvasChanged() { update(); }
-    void onCanvasImageChanged(QVector<int> dirtyLayers, QRect dirtyRegion);
+    void onCanvasImageChanged(int dirtyLayer, QRect dirtyRegion);
 private:
     // Event Overrides
     virtual void paintEvent(QPaintEvent* event) override;
@@ -30,7 +28,6 @@ private:
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
     // CanvasWidget
-    void draw();
     double pixelRatio() const { return width() / m_canvas->size().width(); }
 
     // Mappings
@@ -39,7 +36,7 @@ private:
     QRect fitRectToPixel(const QRect& rect) const;
 
     QPoint mapPointToImage(const QPoint& point) const;
-    QPoint mapPointToWidget(const QPointF& point) const;
+    QPoint mapPointToWidget(const QPoint& point) const;
     QRect mapRectToImage(const QRect& rect) const;
     QRect mapRectToWidget(const QRect& rect) const;
 private:
@@ -47,21 +44,13 @@ private:
 private:
     // Canvas
     Canvas* m_canvas;
-    Stroke m_stroke;
 
     // Settings
-    QVector<QColor> m_penColors;
-    int m_penWidth = 1;
+    Tool* m_tool;
     QPixmap m_background;
 
     // Input
     bool m_acceptMouseInput = true;
-
-    // Drawing
-    QPointF m_lastMousePosition;
-    QPointF m_currentMousePosition;
-    QRect m_updateRegion;
-    bool m_isDrawing = false;
 };
 
 #endif // CANVASWIDGET_H

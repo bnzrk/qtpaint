@@ -15,7 +15,7 @@ CanvasViewport::CanvasViewport(QWidget *parent) :
     QShortcut *zoomOutShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), this);
     QObject::connect(zoomOutShortcut, &QShortcut::activated, this, &CanvasViewport::zoomOut);
 
-    // TEMP UNDO/REDO
+    // TEMP
     QShortcut *undoShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Z), this);
     QObject::connect(undoShortcut, &QShortcut::activated, this, [=]{ m_canvas->undo(); m_canvasWidget->update(); });
 
@@ -56,9 +56,6 @@ void CanvasViewport::setCanvas(Canvas* canvas)
 
 void CanvasViewport::keyPressEvent(QKeyEvent* event)
 {
-    if (m_canvasWidget->drawing())
-        return;
-
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
     {
         horizontalScrollBar()->blockSignals(true);
@@ -94,9 +91,6 @@ void CanvasViewport::keyReleaseEvent(QKeyEvent* event)
 
 void CanvasViewport::mousePressEvent(QMouseEvent* event)
 {
-    if (m_canvasWidget->drawing())
-        return;
-
     if (event->button() == Qt::LeftButton && m_panMode)
     {
         m_lastMousePosition = m_background->mapFromParent(event->pos());
@@ -187,6 +181,8 @@ void CanvasViewport::setZoom(int zoom)
     int prevZoom = m_zoom;
     m_zoom = zoom;
 
+    m_canvas->setZoom(zoom);
+
     QPoint scrollPosition = QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value());
     QPoint scrollAmount = QPoint();
 
@@ -217,7 +213,7 @@ void CanvasViewport::zoomIn()
     if (!m_canvas)
         return;
 
-    if (m_zoom < MAX_ZOOM)
+    if (m_canvas->zoom() < MAX_ZOOM)
         setZoom(m_zoom + 1);
 }
 
@@ -227,6 +223,6 @@ void CanvasViewport::zoomOut()
     if (!m_canvas)
         return;
 
-    if (m_zoom > 1)
+    if (m_canvas->zoom() > 1)
         setZoom(m_zoom - 1);
 }

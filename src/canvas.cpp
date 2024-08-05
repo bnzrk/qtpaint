@@ -3,6 +3,7 @@
 Canvas::Canvas(QSize size, QObject* parent) :
     QObject(parent),
     m_size{size},
+    m_zoom{1},
     m_undos{QStack<Command*>()},
     m_redos{QStack<Command*>()}
 {
@@ -24,13 +25,39 @@ void Canvas::initializeImage()
     createNewLayer();
 }
 
+QPoint Canvas::snapPointToGrid(const QPoint &point) const
+{
+    int scale = pixelRatio();
+    int x = (point.x() / scale) * scale;
+    int y = (point.y() / scale) * scale;
+    return QPoint(x, y);
+}
+
+QPoint Canvas::mapPointFromScaled(const QPoint &point) const
+{
+    QPoint adjusted = snapPointToGrid(point);
+    int scale = pixelRatio();
+    int x = adjusted.x() / scale;
+    int y = point.y() / scale;
+    return QPoint(x, y);
+}
+
+QRect Canvas::mapRectToScaled(const QRect &rect) const
+{
+    int scale = pixelRatio();
+
+    QPoint topLeft = rect.topLeft() * scale;
+    QPoint bottomRight = rect.bottomRight() * scale;
+
+    return QRect(topLeft, bottomRight);
+}
+
 void Canvas::pushCommand(Command* command)
 {
     if (!m_redos.empty())
         m_redos.clear();
 
-    m_redos.push(command);
-    redo();
+    m_undos.push(command);
 }
 
 void Canvas::redo()
@@ -42,7 +69,6 @@ void Canvas::redo()
     m_undos.push(command);
 
     command->execute();
-    //emit canvasChanged();
 }
 
 void Canvas::undo()
@@ -54,7 +80,6 @@ void Canvas::undo()
     m_redos.push(command);
 
     command->revert();
-    //emit canvasChanged();
 }
 
 void Canvas::swapLayers(int a, int b)

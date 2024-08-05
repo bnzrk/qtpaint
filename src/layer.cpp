@@ -1,11 +1,15 @@
 #include "layer.h"
 
 Layer::Layer(QString name, QImage image, QObject* parent) :
-    QObject{parent},
-    m_name{name},
-    m_image{image}
+    PaintImage{image, parent},
+    m_name{name}
 {
 
+}
+
+void Layer::markDirty(const QRect& dirtyRegion)
+{
+    emit layerImageChanged(dirtyRegion);
 }
 
 void Layer::setVisible(bool visible)
@@ -26,4 +30,11 @@ void Layer::toggleVisible()
 void Layer::fill(QRgb fillColor)
 {
     m_image.fill(fillColor);
+    emit layerChanged();
+}
+
+void Layer::clear()
+{
+    fill(qRgba(0, 0, 0, 0));
+    emit layerChanged();
 }

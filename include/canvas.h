@@ -17,31 +17,41 @@ public:
     explicit Canvas(int width, int height, QObject* parent = nullptr) : Canvas(QSize(width, height)) {}
     ~Canvas();
 
+    // Canvas
     void initializeImage();
+    QSize size() const { return m_size; }
 
+    double pixelRatio() const { return (m_size.width() * m_zoom) / size().width(); }
+    QPoint snapPointToGrid(const QPoint& point) const;
+    QPoint mapPointFromScaled(const QPoint& point) const;
+    QRect mapRectToScaled(const QRect& rect) const;
+
+    // Zoom
+    double zoom() const { return m_zoom; }
+    void setZoom(int zoom) { m_zoom = zoom; }
+
+    // Layers
     int activeLayer() const { return m_activeLayer; }
     void setActiveLayer(int index) { m_activeLayer = index; }
-
     void createNewLayer();
     void createNewLayer(int index);
     void removeLayer(int index);
     void swapLayers(int a, int b);
-
     void toggleLayerVisible(int index);
-
     QVector<Layer*> layers() { return m_layers; }
     int layerCount() const { return m_layers.size(); }
     Layer* layerAt(int index) { return m_layers[index]; }
-    QSize size() const { return m_size; }
 
+    // Command History
     void pushCommand(Command* command);
     void redo();
     void undo();
 signals:
     void canvasChanged();
-    void canvasImageChanged(QVector<int> dirtyLayers, QRect diryRegion);
+    void canvasImageChanged(int dirtyLayer, const QRect& dirtyRegion);
 private:
     QSize m_size;
+    double m_zoom;
 
     QVector<Layer*> m_layers;
     int m_activeLayer = 0;

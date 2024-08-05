@@ -8,12 +8,14 @@ Stroke::Stroke(QPen pen) :
 
 void Stroke::addPoint(const QPoint &point)
 {
+    m_previous = m_current;
     if (m_path.capacity() < 1)
         m_path.moveTo(point);
     else
     {
         m_path.lineTo(point);
     }
+    m_current = point;
 }
 
 QRect Stroke::boundingRect() const
