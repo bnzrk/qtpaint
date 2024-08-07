@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>layerpanel.qss</file>
+        <file>main.qss</file>
+    </qresource>
+</RCC>

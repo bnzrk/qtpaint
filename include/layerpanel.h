@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QScrollBar>
+#include <QFile>
 #include "canvas.h"
 #include "layerpanelitem.h"
 

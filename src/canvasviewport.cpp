@@ -28,8 +28,7 @@ CanvasViewport::CanvasViewport(QWidget *parent) :
     // setup widgets and layout
     setWidgetResizable(true);
     m_background->setLayout(m_layout);
-    QString style = "background-color: #404142;";
-    m_background->setStyleSheet(style);
+    m_background->setObjectName("viewportBackground");
     m_layout->addWidget(m_canvasWidget, Qt::AlignCenter);
     setWidget(m_background);
 }

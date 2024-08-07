@@ -6,6 +6,15 @@ LayerPanel::LayerPanel(QWidget *parent)
     , ui(new Ui::LayerPanel)
 {
     ui->setupUi(this);
+
+    QFile styleFile(":/layerpanel.qss");
+    if(styleFile.open(QIODevice::ReadOnly))
+    {
+        QString styleSheet = styleFile.readAll();
+        styleFile.close();
+        setStyleSheet(styleSheet);
+    }
+
     m_items = QVector<LayerPanelItem*>();
 
     QObject::connect(ui->newLayerButton, &QPushButton::clicked, this, &LayerPanel::onNewLayerClicked);

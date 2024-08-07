@@ -1,0 +1,147 @@
+QWidget
+{
+    background: #323232;
+}
+QWidget#viewportBackground
+{
+    background: #212121;
+}
+
+QLabel
+{
+    background: transparent;
+}
+
+QToolButton
+{
+    border: none;
+    background: none;
+}
+QToolButton:hover:!checked
+{
+    margin: 0px 0px 0px 0px;
+    border-radius: 3px;
+    background: #282828;
+}
+QToolButton:checked
+{
+    margin: 0px 0px 0px 0px;
+    border: 1px solid #404242;
+    border-radius: 3px;
+    border-color: #404242;
+    background: #212121;
+}
+QToolButton:pressed
+{
+    margin: 0px 0px 0px 0px;
+    border: 1px solid #404242;
+    border-radius: 3px;
+    border-color: #404242;
+    background: #212121;
+}
+
+QPushButton
+{
+    border: none;
+    background: none;
+}
+QPushButton:hover:!pressed
+{
+    margin: 0px 0px 0px 0px;
+    border: 1px solid #404242;
+    border-radius: 3px;
+    background: #282828;
+}
+QPushButton:pressed
+{
+    margin: 0px 0px 0px 0px;
+    border: 1px solid #404242;
+    border-radius: 3px;
+    border-color: #404242;
+    background: #212121;
+}
+
+QAbstractScrollArea
+{
+    border: none;
+    background-clip: border;
+    background: none;
+}
+QAbstractScrollArea::corner
+{
+    background: #212121;
+}
+QScrollBar:horizontal
+{
+    margin: 0px 0px 0px 0px;
+    width: 12px;
+    background-color: #212121;
+}
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
+{
+    border: none;
+    background: none;
+    color: none;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal
+{
+    border: none;
+    background: none;
+    color: none;
+}
+
+QScrollBar:vertical
+{
+    margin: 0px 0px 0px 0px;
+    width: 12px;
+    background-color: #212121;
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
+{
+    border: none;
+    background: none;
+    color: none;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: #0026FF;
+    background: none;
+    color: none
+}
+
+QScrollBar::handle:vertical
+{
+    margin: 3px 3px 3px 3px;
+    background-color: #404142;
+    border-radius: 3px;
+}
+QScrollBar::down-button
+{
+    background: none;
+    border: none;
+    color: none;
+}
+QScrollBar::up-button
+{
+    background: none;
+    border: none;
+    color: none;
+}
+
+QScrollBar::handle:horizontal
+{
+    margin: 3px 3px 3px 3px;
+    background-color: #404142;
+    border-radius: 3px;
+}
+QScrollBar::left-button
+{
+    background: none;
+    border: none;
+    color: none;
+}
+QScrollBar::right-button
+{
+    background: none;
+    border: none;
+    color: none;
+}

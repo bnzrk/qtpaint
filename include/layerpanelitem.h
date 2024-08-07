@@ -22,8 +22,8 @@ public:
     QString getDisplayName();
     void setDisplayName(QString displayName);
 public:
-    const QString SELECTED_STYLE = "QWidget#draggableRegion { background-color: #C4D3DE; }";
-    const QString UNSELECTED_STYLE = "QWidget#draggableRegion {}";
+    const QString SELECTED_STYLE = "QWidget#draggableRegion { background-color: #464646; }";
+    const QString UNSELECTED_STYLE = "QWidget#draggableRegion { background-color: #2B2B2B; }";
 public slots:
     void onVisibleButtonToggled();
     void onUpButtonClicked();

@@ -20,6 +20,9 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="leftMargin">
      <number>0</number>
@@ -60,7 +63,7 @@
        <string notr="true">QWidget#topBar {
 	border-bottom-style: solid; 
 	border-bottom-width: 1px;
-	border-bottom-color: #000000; 
+	border-bottom-color: #212121; 
 }
 </string>
       </property>
@@ -69,7 +72,7 @@
     <item row="1" column="0">
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <property name="handleWidth">
        <number>0</number>
@@ -116,7 +119,7 @@
             <property name="spacing">
              <number>0</number>
             </property>
-            <item alignment="Qt::AlignHCenter">
+            <item alignment="Qt::AlignmentFlag::AlignHCenter">
              <widget class="QToolButton" name="toolButton">
               <property name="minimumSize">
                <size>
@@ -131,7 +134,11 @@
                </size>
               </property>
               <property name="text">
-               <string>P</string>
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../resource/image/icons.qrc">
+                <normaloff>:/eye_open.png</normaloff>:/eye_open.png</iconset>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -144,7 +151,7 @@
               </attribute>
              </widget>
             </item>
-            <item alignment="Qt::AlignHCenter">
+            <item alignment="Qt::AlignmentFlag::AlignHCenter">
              <widget class="QToolButton" name="toolButton_2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -171,7 +178,11 @@
                </size>
               </property>
               <property name="text">
-               <string>E</string>
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../resource/image/icons.qrc">
+                <normaloff>:/eye_open.png</normaloff>:/eye_open.png</iconset>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -188,7 +199,7 @@
         <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -224,40 +235,13 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QFrame" name="frame">
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+         <widget class="CanvasViewport" name="viewport" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item row="0" column="0">
-            <widget class="CanvasViewport" name="viewport" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </widget>
         </item>
        </layout>
@@ -288,7 +272,7 @@
         </size>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
        </property>
       </widget>
      </widget>
@@ -321,7 +305,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resource/image/icons.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
