@@ -4,59 +4,71 @@
 ColorPanel::ColorPanel(QWidget *parent) :
     QWidget{parent},
     ui(new Ui::ColorPanel),
-    m_hsvSelector{nullptr},
+    m_mainSelectorLayout{nullptr},
     m_config{Configuration::None}
 {
     ui->setupUi(this);
+    setMouseTracking(true);
 
-    setConfiguration(Configuration::HSV);
+    m_mainSelectorLayout = new QStackedLayout;
+    ui->mainSelectorContainer->setLayout(m_mainSelectorLayout);
 }
 
-void ColorPanel::setConfiguration(Configuration config)
+void ColorPanel::showEvent(QShowEvent *event)
 {
-    if (config == Configuration::HSV)
-    {
-        if (!m_hsvSelector)
-            initConfig(config);
+    setConfig(Configuration::HSV);
+}
 
-        hideConfig(m_config);
-        m_config = config;
-        showConfig(config);
-    }
-    else if (config == Configuration::None)
+void ColorPanel::setConfig(Configuration config)
+{
+    if (config == m_config)
+        return;
+
+    if (config != Configuration::None && initializedConfigs.count(config) == 0)
     {
-        for (auto c : configurations)
-        {
-            hideConfig(c);
-        }
-        m_config = config;
+        initConfig(config);
     }
+    m_config = config;
+    showConfig(config);
 }
 
 void ColorPanel::initConfig(Configuration config)
 {
+    if (config == Configuration::None)
+        return;
+
+    ColorSelector* newSelector = nullptr;
     if (config == Configuration::HSV)
     {
-        m_hsvSelector = new HSVColorSelector(this);
-        m_hsvSelector->setObjectName("hsvSelector");
+        newSelector = new HSVColorSelector(this);
+        newSelector->setObjectName("hsvSelector");
+
+    }
+    else if (config == Configuration::NormalMap)
+    {
+        newSelector = new NormalMapColorSelector(this);
+        newSelector->setObjectName("normalMapSelector");
+    }
+    if (newSelector)
+    {
+        int stackIndex = m_mainSelectorLayout->addWidget(newSelector);
+        mainSelectors.insert(config, stackIndex);
+        initializedConfigs.insert(config);
     }
 }
 
 void ColorPanel::showConfig(Configuration config)
 {
-    if (config == Configuration::HSV)
+    if (config == Configuration::None)
     {
-        ui->mainSelectorLayout->takeAt(0);
-        ui->mainSelectorLayout->addWidget(m_hsvSelector);
-        m_hsvSelector->show();
+        hideCurrentConfig();
+        return;
     }
+
+    m_mainSelectorLayout->setCurrentIndex(mainSelectors[config]);
 }
 
-void ColorPanel::hideConfig(Configuration config)
+void ColorPanel::hideCurrentConfig()
 {
-    if (config == Configuration::HSV)
-    {
-        m_hsvSelector->disconnect();
-        m_hsvSelector->hide();
-    }
+    ui->mainSelectorContainer->hide();
 }

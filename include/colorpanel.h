@@ -1,9 +1,12 @@
 #ifndef COLORPANEL_H
 #define COLORPANEL_H
 
+#include <QStackedLayout>
+#include <QMap>
 #include <set>
-#include "colorselector.h"
 #include "hsvcolorselector.h"
+#include "normalmapcolorselector.h"
+#include <QMouseEvent>
 
 namespace Ui
 {
@@ -23,18 +26,22 @@ public:
     const std::set<Configuration> configurations = {Configuration::HSV, Configuration::NormalMap};
 public:
     explicit ColorPanel(QWidget *parent = nullptr);
+
+    void showEvent(QShowEvent* event) override;
 public slots:
-    void setConfiguration(Configuration config);
+    void setConfig(Configuration config);
 private:
     void initConfig(Configuration config);
     void showConfig(Configuration config);
-    void hideConfig(Configuration config);
+    void hideCurrentConfig();
 private:
     Ui::ColorPanel* ui;
 
     Configuration m_config;
+    std::set<Configuration> initializedConfigs;
+    QMap<Configuration, int> mainSelectors;
 
-    ColorSelector* m_hsvSelector;
+    QStackedLayout* m_mainSelectorLayout;
 };
 
 #endif // COLORPANEL_H
