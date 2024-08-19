@@ -166,7 +166,9 @@ void CanvasViewport::updateView()
         // update canvas
         m_canvasWidget->setFixedSize(canvasSize);
         m_canvasWidget->update();
-        this->setMaximumWidth(m_background->size().width());
+
+        // FIXME: Rewrite resizing of viewport background
+        //this->setMaximumWidth(m_background->size().width());
     }
     else
     {

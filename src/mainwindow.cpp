@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_canvas = new Canvas(800, 600, this);
 
     ui->viewport->setCanvas(m_canvas);
-    ui->layerPanel->setCanvas(m_canvas);
+    ui->rightPanel->init(m_canvas);
 }
 
 MainWindow::~MainWindow()

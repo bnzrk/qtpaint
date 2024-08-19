@@ -32,7 +32,7 @@ public:
 
     void centerView();
 public:
-    static const int MAX_MARGIN_SIZE = 900;
+    static const int MAX_MARGIN_SIZE = 2000;
     static const int MAX_ZOOM = 10;
 signals:
     void childMouseInputEnabled();

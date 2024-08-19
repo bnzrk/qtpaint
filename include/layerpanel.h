@@ -21,7 +21,7 @@ public:
     ~LayerPanel();
     void cleanup();
 
-    virtual void showEvent(QShowEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
     void setCanvas(Canvas* canvas);
 public slots:

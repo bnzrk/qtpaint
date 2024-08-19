@@ -62,7 +62,7 @@
       <property name="styleSheet">
        <string notr="true">QWidget#topBar {
 	border-bottom-style: solid; 
-	border-bottom-width: 1px;
+	border-bottom-width: 2px;
 	border-bottom-color: #212121; 
 }
 </string>
@@ -71,6 +71,12 @@
     </item>
     <item row="1" column="0">
      <widget class="QSplitter" name="splitter">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="orientation">
        <enum>Qt::Orientation::Horizontal</enum>
       </property>
@@ -82,7 +88,7 @@
       </property>
       <widget class="QWidget" name="toolPanel" native="true">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -99,7 +105,7 @@
          <height>0</height>
         </size>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -114,6 +120,9 @@
         </property>
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout">
             <property name="spacing">
@@ -211,42 +220,21 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="centerPanel" native="true">
+      <widget class="CanvasViewport" name="viewport" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="CanvasViewport" name="viewport" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <property name="minimumSize">
+        <size>
+         <width>160</width>
+         <height>0</height>
+        </size>
+       </property>
       </widget>
-      <widget class="LayerPanel" name="layerPanel" native="true">
+      <widget class="RightSidePanel" name="rightPanel" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -255,7 +243,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>140</width>
+         <width>160</width>
          <height>0</height>
         </size>
        </property>
@@ -273,6 +261,9 @@
        </property>
        <property name="layoutDirection">
         <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
        </property>
       </widget>
      </widget>
@@ -293,15 +284,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LayerPanel</class>
-   <extends>QWidget</extends>
-   <header>include/layerpanel.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>CanvasViewport</class>
    <extends>QWidget</extends>
    <header>canvasviewport.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RightSidePanel</class>
+   <extends>QWidget</extends>
+   <header>rightsidepanel.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
