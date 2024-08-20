@@ -17,6 +17,10 @@ public:
     explicit Canvas(int width, int height, QObject* parent = nullptr) : Canvas(QSize(width, height)) {}
     ~Canvas();
 
+    // TEMP
+    QColor primaryColor() { return m_primaryColor; }
+    void setPrimaryColor(const QColor& color) { m_primaryColor = color; }
+
     // Canvas
     void initializeImage();
     QSize size() const { return m_size; }
@@ -50,6 +54,9 @@ signals:
     void canvasChanged();
     void canvasImageChanged(int dirtyLayer, const QRect& dirtyRegion);
 private:
+    // TEMP
+    QColor m_primaryColor;
+
     QSize m_size;
     double m_zoom;
 

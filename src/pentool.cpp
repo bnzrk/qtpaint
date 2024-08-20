@@ -11,8 +11,13 @@ PenTool::PenTool(Canvas* canvas) :
 
 void PenTool::mousePressEvent(QMouseEvent *event)
 {
+    if (!m_canvas->layerAt(m_targetLayer)->isVisible())
+        return;
+
     if (event->button() == Qt::LeftButton && !m_drawing)
     {
+        m_pen.setColor(m_canvas->primaryColor()); // TEMP
+
         QPoint point = m_canvas->mapPointFromScaled(event->pos());
 
         m_drawing = true;

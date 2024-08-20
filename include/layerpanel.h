@@ -15,7 +15,21 @@ class LayerPanel;
 class LayerPanel : public QWidget
 {
     Q_OBJECT
-
+public:
+    inline static const QList<QString> BLEND_MODE_STRINGS = {"Normal",
+                                                             "Multiply",
+                                                             "Add",
+                                                             "Color Burn",
+                                                             "Color Dodge",
+                                                             "Screen",
+                                                             "Overlay",
+                                                             "Lighten",
+                                                             "Darken",
+                                                             "Hard Light",
+                                                             "Soft Light",
+                                                             "Difference",
+                                                             "Exclusion",
+                                                             "Xor"};
 public:
     explicit LayerPanel(QWidget* parent = nullptr);
     ~LayerPanel();
@@ -31,6 +45,7 @@ public slots:
     void onItemClicked(LayerPanelItem* sender);
     void onNewLayerClicked();
     void onRemoveLayerClicked();
+    void changeLayerBlendMode(const QString &text);
 private:
     void swapLayers(int a, int b);
     void toggleLayerVisibility(int index);
@@ -42,6 +57,9 @@ private:
 
     int getIndexOf(const LayerPanelItem* item) const;
     LayerPanelItem* getItemAtIndex(int index);
+
+    QString blendModeName(Layer::BlendMode blendMode) const;
+    Layer::BlendMode blendModeFromName(const QString& name);
 private:
     Ui::LayerPanel* ui;
 

@@ -5,7 +5,8 @@ Canvas::Canvas(QSize size, QObject* parent) :
     m_size{size},
     m_zoom{1},
     m_undos{QStack<Command*>()},
-    m_redos{QStack<Command*>()}
+    m_redos{QStack<Command*>()},
+    m_primaryColor{Qt::red}
 {
     initializeImage();
 }

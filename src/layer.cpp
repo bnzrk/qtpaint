@@ -2,10 +2,9 @@
 
 Layer::Layer(QString name, QImage image, QObject* parent) :
     PaintImage{image, parent},
-    m_name{name}
-{
-
-}
+    m_name{name},
+    m_blendMode{BlendMode::Normal}
+{}
 
 void Layer::markDirty(const QRect& dirtyRegion)
 {
@@ -36,5 +35,11 @@ void Layer::fill(QRgb fillColor)
 void Layer::clear()
 {
     fill(qRgba(0, 0, 0, 0));
+    emit layerChanged();
+}
+
+void Layer::setBlendMode(BlendMode blendMode)
+{
+    m_blendMode = blendMode;
     emit layerChanged();
 }

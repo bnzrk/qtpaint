@@ -22,6 +22,68 @@ QLabel
     color: #C9C9CC;
 }
 
+QComboBox
+{
+    placeholder-text-color: #C9C9CC;
+    color: #C9C9CC;
+    padding: 1px 2px 3px 6px;
+    border-radius: 3px;
+    border: none;
+    background: #212121;
+}
+QComboBox::drop-down
+{
+    border-radius: 5px;
+    border: none;
+    background: #212121;
+}
+QComboBox::down-arrow
+{
+    image: url(:/dropdown_arrow.png);
+    width: 20px;
+    height: 20px;
+    background: none;
+}
+QComboBox QAbstractItemView
+{
+    outline: none;
+    background: #2B2B2B;
+    selection-background-color: lightgray;
+}
+QComboBox QListView
+{
+    border-radius: 0px;
+    outline: none;
+    background: #212121;
+}
+QComboBox QListView::item
+{
+    border-radius: 5px;
+    color: #C9C9CC;
+    border-radius: 3px;
+    background: transparent;
+    margin: 2px 2px 2px 2px;
+    padding: 0px 3px 0px 0px;
+}
+QListView::item:selected
+{
+    color: #C9C9CC;
+    background: #2B2B2B;
+    border-radius: 3px;
+    border: none;
+    margin: 2px 2px 2px 2px;
+    padding: 0px 3px 0px 0px;
+}
+QListView::item:hover
+{
+    color: #C9C9CC;
+    background: #464646;
+    border-radius: 3px;
+    border: none;
+    margin: 2px 2px 2px 2px;
+    padding: 0px 3px 0px 0px;
+}
+
 QToolButton
 {
     border: none;

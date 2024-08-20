@@ -60,6 +60,11 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event)
 {
     if (m_acceptMouseInput)
     {
+        if (event->button() == Qt::RightButton) // TEMP
+        {
+            m_canvas->setPrimaryColor((m_canvas->primaryColor() == Qt::red) ? Qt::green : Qt::red);
+            return;
+        }
         if (m_tool)
         {
             m_tool->mousePressEvent(event);
@@ -176,7 +181,10 @@ void CanvasWidget::paintEvent(QPaintEvent* event)
     for (int i = 0; i < m_canvas->layerCount(); i++)
     {
         if (m_canvas->layerAt(i)->isVisible())
+        {
+            painter.setCompositionMode((QPainter::CompositionMode)m_canvas->layerAt(i)->blendMode());
             painter.drawImage(paintRegion, *(m_canvas->layerAt(i)->image()), imageRegion);
+        }
     }
     painter.end();
 }

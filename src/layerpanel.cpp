@@ -15,10 +15,16 @@ LayerPanel::LayerPanel(QWidget *parent)
         setStyleSheet(styleSheet);
     }
 
+    ui->blendModeComboBox->addItems(BLEND_MODE_STRINGS);
+    ui->blendModeComboBox->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->blendModeComboBox->setFrame(false);
+
     m_items = QVector<LayerPanelItem*>();
 
     QObject::connect(ui->newLayerButton, &QPushButton::clicked, this, &LayerPanel::onNewLayerClicked);
     QObject::connect(ui->removeLayerButton, &QPushButton::clicked, this, &LayerPanel::onRemoveLayerClicked);
+
+    QObject::connect(ui->blendModeComboBox, &QComboBox::currentTextChanged, this, &LayerPanel::changeLayerBlendMode);
 }
 
 LayerPanel::~LayerPanel()
@@ -94,6 +100,73 @@ void LayerPanel::onRemoveLayerClicked()
     }
 }
 
+void LayerPanel::changeLayerBlendMode(const QString &text)
+{
+    Layer* layer = m_canvas->layerAt(m_canvas->activeLayer());
+    Layer::BlendMode newBlendMode;
+    if (text == "Normal")
+    {
+        newBlendMode = Layer::BlendMode::Normal;
+    }
+    else if (text == "Multiply")
+    {
+        newBlendMode = Layer::BlendMode::Multiply;
+    }
+    else if (text == "Add")
+    {
+        newBlendMode = Layer::BlendMode::Add;
+    }
+    else if (text == "Color Burn")
+    {
+        newBlendMode = Layer::BlendMode::ColorBurn;
+    }
+    else if (text == "Color Dodge")
+    {
+        newBlendMode = Layer::BlendMode::ColorDodge;
+    }
+    else if (text == "Screen")
+    {
+        newBlendMode = Layer::BlendMode::Screen;
+    }
+    else if (text == "Overlay")
+    {
+        newBlendMode = Layer::BlendMode::Overlay;
+    }
+    else if (text == "Lighten")
+    {
+        newBlendMode = Layer::BlendMode::Lighten;
+    }
+    else if (text == "Darken")
+    {
+        newBlendMode = Layer::BlendMode::Darken;
+    }
+    else if (text == "Hard Light")
+    {
+        newBlendMode = Layer::BlendMode::HardLight;
+    }
+    else if (text == "Soft Light")
+    {
+        newBlendMode = Layer::BlendMode::SoftLight;
+    }
+    else if (text == "Difference")
+    {
+        newBlendMode = Layer::BlendMode::Difference;
+    }
+    else if (text == "Exclusion")
+    {
+        newBlendMode = Layer::BlendMode::Exclusion;
+    }
+    else if (text == "Xor")
+    {
+        newBlendMode = Layer::BlendMode::Xor;
+    }
+    else
+    {
+        Q_ASSERT_X(false, "changeLayerBlendMode", "Layer blend mode does not exist!");
+    }
+    layer->setBlendMode(newBlendMode);
+}
+
 void LayerPanel::onVisibilityToggled(LayerPanelItem* sender)
 {
     int senderIndex = getIndexOf(sender);
@@ -123,6 +196,9 @@ void LayerPanel::onItemClicked(LayerPanelItem* sender)
         m_items[m_canvas->activeLayer()]->deselect();
     m_canvas->setActiveLayer(senderIndex);
     m_items[senderIndex]->select();
+
+    Layer::BlendMode activeBlendMode = m_canvas->layerAt(m_canvas->activeLayer())->blendMode();
+    ui->blendModeComboBox->setCurrentText(blendModeName(activeBlendMode));
 }
 
 void LayerPanel::updateItemDisplay(int index)
@@ -183,6 +259,43 @@ int LayerPanel::getIndexOf(const LayerPanelItem* item) const
             return i;
     }
     return -1;
+}
+
+QString LayerPanel::blendModeName(Layer::BlendMode blendMode) const
+{
+    switch (blendMode)
+    {
+    case Layer::BlendMode::Normal:
+        return BLEND_MODE_STRINGS[0];
+    case Layer::BlendMode::Multiply:
+        return BLEND_MODE_STRINGS[1];
+    case Layer::BlendMode::Add:
+        return BLEND_MODE_STRINGS[2];
+    case Layer::BlendMode::ColorBurn:
+        return BLEND_MODE_STRINGS[3];
+    case Layer::BlendMode::ColorDodge:
+        return BLEND_MODE_STRINGS[4];
+    case Layer::BlendMode::Screen:
+        return BLEND_MODE_STRINGS[5];
+    case Layer::BlendMode::Overlay:
+        return BLEND_MODE_STRINGS[6];
+    case Layer::BlendMode::Lighten:
+        return BLEND_MODE_STRINGS[7];
+    case Layer::BlendMode::Darken:
+        return BLEND_MODE_STRINGS[8];
+    case Layer::BlendMode::HardLight:
+        return BLEND_MODE_STRINGS[9];
+    case Layer::BlendMode::SoftLight:
+        return BLEND_MODE_STRINGS[10];
+    case Layer::BlendMode::Difference:
+        return BLEND_MODE_STRINGS[11];
+    case Layer::BlendMode::Exclusion:
+        return BLEND_MODE_STRINGS[12];
+    case Layer::BlendMode::Xor:
+        return BLEND_MODE_STRINGS[14];
+    default:
+        Q_ASSERT_X(false, "blendModeName", "Name not found!");
+    }
 }
 
 void LayerPanel::populateItems()
