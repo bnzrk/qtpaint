@@ -25,7 +25,7 @@ void CanvasWidget::setCanvas(Canvas* canvas)
 
     m_tool = new PenTool(m_canvas);
 
-    QObject::connect(m_canvas, &Canvas::canvasImageChanged, this, &CanvasWidget::onCanvasImageChanged);
+    connect(m_canvas, &Canvas::canvasDirty, this, &CanvasWidget::updateCanvasImage);
     setFixedSize(canvas->size());
 
     // generate background
@@ -39,7 +39,7 @@ void CanvasWidget::setCanvas(Canvas* canvas)
     show();
 }
 
-void CanvasWidget::onCanvasImageChanged(int dirtyLayer, QRect dirtyRegion)
+void CanvasWidget::updateCanvasImage(const QVector<int> &dirtyLayers, const QRect &dirtyRegion)
 {
     QRect repaintRegion = m_canvas->mapRectToScaled(dirtyRegion);
     repaintRegion = fitRectToPixel(repaintRegion);
@@ -92,7 +92,6 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event)
         if (m_tool)
         {
             m_tool->mouseReleaseEvent(event);
-            update();
         }
     }
     event->ignore();

@@ -34,6 +34,9 @@ public:
     void fill(QRgb fillColor);
     void clear();
 
+    QSize size() { return m_size; }
+    QRect rect() { return QRect(QPoint(0, 0), m_size); }
+
     BlendMode blendMode() { return m_blendMode; }
     void setBlendMode(BlendMode blendMode);
     bool isVisible() const { return m_visible; }
@@ -42,10 +45,10 @@ public:
 public slots:
     void markDirty(const QRect& dirtyRegion);
 signals:
-    void layerChanged();
-    void layerImageChanged(const QRect& affectedRegion);
+    void layerDirty(const QRect& dirtyRegion);
 private:
     QString m_name;
+    QSize m_size;
 
     BlendMode m_blendMode;
     bool m_visible = true;

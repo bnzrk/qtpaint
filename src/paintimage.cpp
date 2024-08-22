@@ -24,6 +24,7 @@ QImage PaintImage::finalizeBuffer()
 
     m_image = *m_buffer;
     delete m_buffer;
+    m_buffer = nullptr;
     m_bufferActive = false;
 
     return original;
@@ -32,6 +33,7 @@ QImage PaintImage::finalizeBuffer()
 void PaintImage::discardBuffer()
 {
     delete m_buffer;
+    m_buffer = nullptr;
     m_bufferActive = false;
 }
 

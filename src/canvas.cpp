@@ -23,7 +23,7 @@ Canvas::~Canvas()
 
 void Canvas::initializeImage()
 {
-    createNewLayer();
+    createLayer(0, Qt::white);
 }
 
 QPoint Canvas::snapPointToGrid(const QPoint &point) const
@@ -83,53 +83,78 @@ void Canvas::undo()
     command->revert();
 }
 
+int Canvas::indexOfLayer(Layer *layer)
+{
+    int index = m_layers.indexOf(layer);
+    Q_ASSERT(index != -1);
+
+    return index;
+}
+
+void Canvas::markDirtyFromLayer(const QRect &dirtyRegion)
+{
+    Layer* layer = qobject_cast<Layer*>(sender());
+    Q_ASSERT(layer);
+
+    int layerIndex = indexOfLayer(layer);
+    markDirty(QVector<int>({layerIndex}), dirtyRegion);
+}
+
+void Canvas::markDirty(Layer *dirtyLayer, const QRect &dirtyRegion)
+{
+    int layerIndex = indexOfLayer(dirtyLayer);
+    markDirty(QVector<int>({layerIndex}), dirtyRegion);
+}
+
 void Canvas::swapLayers(int a, int b)
 {
     m_layers.swapItemsAt(a, b);
-    emit canvasChanged();
+    emit canvasDirty(QVector<int>({a, b}), rect());
 }
 
-void Canvas::createNewLayer()
+// FIXME: Calling on empty layer list is unsafe
+void Canvas::createLayer(int index, const QColor &color)
 {
-    QString name = "Layer ";
-    name.append(QString::number(m_newLayerSuffix));
-    QImage image = QImage(m_size, QImage::Format_ARGB32);
     if (m_layers.size() < 1)
-    {
-        image.fill(Qt::white);
-    }
-    else
-    {
-        image.fill(QColor(255, 255, 255, 0));
-    }
+        Q_ASSERT(index == 0);
 
-    Layer* layer = new Layer(name, image, this);
-    QObject::connect(layer, &Layer::layerChanged, this, &Canvas::canvasChanged);
-    m_layers.push_back(layer);
-    m_newLayerSuffix++;
-    emit canvasChanged();
-}
-
-void Canvas::createNewLayer(int index)
-{
     QString name = "Layer ";
     name.append(QString::number(m_newLayerSuffix));
     QImage image = QImage(m_size, QImage::Format_ARGB32);
-
-    image.fill(QColor(255, 255, 255, 0));
+    image.fill(color);
 
     Layer* layer = new Layer(name, image, this);
-    QObject::connect(layer, &Layer::layerChanged, this, &Canvas::canvasChanged);
+    connect(layer, &Layer::layerDirty, this, &Canvas::markDirtyFromLayer);
 
-    m_layers.insert(index, layer);
-
+    if (m_layers.size() < 1)
+        m_layers.push_back(layer);
+    else
+        m_layers.insert(index, layer);
     m_newLayerSuffix++;
-    emit canvasChanged();
+    for (auto l : m_layers)
+    {
+        qDebug() << l->name();
+    }
+
+    emit layerInsersted(index);
+    emit canvasDirty(QVector<int>({index}), rect());
 }
 
+// TODO: Add signal for layer removal and insertion
 void Canvas::removeLayer(int index)
 {
     Layer* layer = m_layers.takeAt(index);
     delete layer;
-    emit canvasChanged();
+    layer = nullptr;
+
+    emit canvasDirty(QVector<int>({index - 1}), rect());
+}
+
+void Canvas::markDirty(QVector<int> dirtyLayers, const QRect &dirtyRegion)
+{
+    emit canvasDirty(dirtyLayers, dirtyRegion);
+}
+void Canvas::setActiveLayer(int index)
+{
+    m_activeLayer = index;
 }

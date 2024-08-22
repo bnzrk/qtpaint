@@ -18,8 +18,7 @@ public:
 public slots:
     void onMouseInputEnabled();
     void onMouseInputDisabled();
-    void onCanvasChanged() { update(); }
-    void onCanvasImageChanged(int dirtyLayer, QRect dirtyRegion);
+    void updateCanvasImage(const QVector<int>& dirtyLayers, const QRect& dirtyRegion);
 private:
     // Event Overrides
     virtual void paintEvent(QPaintEvent* event) override;

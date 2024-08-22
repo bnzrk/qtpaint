@@ -33,8 +33,7 @@ void PenTool::mousePressEvent(QMouseEvent *event)
         painter.setPen(m_pen);
         painter.drawPoint(point);
 
-        // TODO: Remove external emit
-        emit m_canvas->canvasImageChanged(m_targetLayer, m_stroke.boundingRect());
+        target->markDirty(m_stroke.boundingRect());
     }
 }
 
@@ -53,8 +52,7 @@ void PenTool::mouseMoveEvent(QMouseEvent *event)
         painter.setPen(m_pen);
         painter.drawLine(prev, point);
 
-        // TODO: Remove external emit
-        emit m_canvas->canvasImageChanged(m_targetLayer, m_stroke.boundingRect());
+        target->markDirty(m_stroke.boundingRect());
     }
 }
 

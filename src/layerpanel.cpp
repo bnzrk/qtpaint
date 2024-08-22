@@ -1,6 +1,9 @@
 #include "layerpanel.h"
 #include "ui_layerpanel.h"
 
+// FIXME: Layer items are broken on insertion/deletion
+// TODO: Rewrite class
+
 LayerPanel::LayerPanel(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LayerPanel)
@@ -74,7 +77,7 @@ void LayerPanel::onNewLayerClicked()
     int index = m_canvas->activeLayer() + 1;
     m_items[m_canvas->activeLayer()]->deselect();
     m_canvas->setActiveLayer(index);
-    m_canvas->createNewLayer(index);
+    m_canvas->createLayer(index);
     addItem(*m_canvas->layerAt(index));
     m_items[index]->select();
 }
@@ -215,8 +218,6 @@ void LayerPanel::updateItemDisplay(int index)
 void LayerPanel::toggleLayerVisibility(int index)
 {
     m_canvas->layerAt(index)->toggleVisible();
-
-    emit m_canvas->canvasImageChanged(index, m_canvas->layerAt(index)->image()->rect());
 }
 
 void LayerPanel::swapLayers(int a, int b)

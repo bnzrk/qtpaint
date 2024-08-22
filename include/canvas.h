@@ -23,6 +23,7 @@ public:
 
     // Canvas
     void initializeImage();
+    QRect rect() const { return QRect(QPoint(0, 0), m_size); }
     QSize size() const { return m_size; }
 
     double pixelRatio() const { return (m_size.width() * m_zoom) / size().width(); }
@@ -36,9 +37,8 @@ public:
 
     // Layers
     int activeLayer() const { return m_activeLayer; }
-    void setActiveLayer(int index) { m_activeLayer = index; }
-    void createNewLayer();
-    void createNewLayer(int index);
+    void setActiveLayer(int index);
+    void createLayer(int index=0, const QColor& color=Qt::transparent);
     void removeLayer(int index);
     void swapLayers(int a, int b);
     void toggleLayerVisible(int index);
@@ -50,9 +50,16 @@ public:
     void pushCommand(Command* command);
     void redo();
     void undo();
+private:
+    int indexOfLayer(Layer* layer);
+public slots:
+    void markDirty(Layer* dirtyLayer, const QRect& dirtyRegion);
+    void markDirty(QVector<int> dirtyLayers, const QRect& dirtyRegion);
+private slots:
+    void markDirtyFromLayer(const QRect& dirtyRegion);
 signals:
-    void canvasChanged();
-    void canvasImageChanged(int dirtyLayer, const QRect& dirtyRegion);
+    void canvasDirty(const QVector<int>& dirtyLayers, const QRect& dirtyRegion);
+    void layerInsersted(int index);
 private:
     // TEMP
     QColor m_primaryColor;

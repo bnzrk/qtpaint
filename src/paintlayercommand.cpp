@@ -13,8 +13,7 @@ void PaintLayerCommand::execute() const
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.drawImage(affectedRegion(), m_paintInfo.modified(), m_paintInfo.modified().rect());
 
-    // TODO: Remove external emit
-    emit m_canvas->canvasImageChanged(targetLayer(), affectedRegion());
+    m_canvas->layerAt(targetLayer())->markDirty(affectedRegion());
 }
 
 void PaintLayerCommand::revert() const
@@ -24,6 +23,5 @@ void PaintLayerCommand::revert() const
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.drawImage(affectedRegion(), m_paintInfo.original(), m_paintInfo.original().rect());
 
-    // TODO: Remove external emit
-    emit m_canvas->canvasImageChanged(targetLayer(), affectedRegion());
+    m_canvas->layerAt(targetLayer())->markDirty(affectedRegion());
 }

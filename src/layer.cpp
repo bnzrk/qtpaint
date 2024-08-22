@@ -4,11 +4,13 @@ Layer::Layer(QString name, QImage image, QObject* parent) :
     PaintImage{image, parent},
     m_name{name},
     m_blendMode{BlendMode::Normal}
-{}
+{
+    m_size = image.size();
+}
 
 void Layer::markDirty(const QRect& dirtyRegion)
 {
-    emit layerImageChanged(dirtyRegion);
+    emit layerDirty(dirtyRegion);
 }
 
 void Layer::setVisible(bool visible)
@@ -17,29 +19,29 @@ void Layer::setVisible(bool visible)
         return;
 
     m_visible = visible;
-    emit layerChanged();
+    emit layerDirty(rect());
 }
 
 void Layer::toggleVisible()
 {
     m_visible = !m_visible;
-    emit layerChanged();
+    emit layerDirty(rect());
 }
 
 void Layer::fill(QRgb fillColor)
 {
     m_image.fill(fillColor);
-    emit layerChanged();
+    emit layerDirty(rect());
 }
 
 void Layer::clear()
 {
     fill(qRgba(0, 0, 0, 0));
-    emit layerChanged();
+    emit layerDirty(rect());
 }
 
 void Layer::setBlendMode(BlendMode blendMode)
 {
     m_blendMode = blendMode;
-    emit layerChanged();
+    emit layerDirty(rect());
 }
