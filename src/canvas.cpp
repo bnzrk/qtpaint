@@ -131,10 +131,6 @@ void Canvas::createLayer(int index, const QColor &color)
     else
         m_layers.insert(index, layer);
     m_newLayerSuffix++;
-    for (auto l : m_layers)
-    {
-        qDebug() << l->name();
-    }
 
     emit layerInsersted(index);
     emit canvasDirty(QVector<int>({index}), rect());

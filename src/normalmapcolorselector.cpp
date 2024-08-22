@@ -5,10 +5,8 @@ NormalMapColorSelector::NormalMapColorSelector(QWidget *parent) :
     m_outerPadding{8},
     m_cursorOuterSize{35},
     m_cursorInnerSize{13},
-    m_cursorLineLength{21}
+    m_cursorLineLength{25}
 {
-    m_outerPadding = m_cursorLineLength - 2;
-
     QSizePolicy sp;
     sp.setHorizontalStretch(1);
     sp.setVerticalStretch(1);
