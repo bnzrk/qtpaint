@@ -1,9 +1,6 @@
 #include "layerpanel.h"
 #include "ui_layerpanel.h"
 
-// FIXME: Layer items are broken on insertion/deletion
-// TODO: Rewrite class
-
 LayerPanel::LayerPanel(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LayerPanel)
@@ -22,17 +19,25 @@ LayerPanel::LayerPanel(QWidget *parent)
     ui->blendModeComboBox->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->blendModeComboBox->setFrame(false);
 
+    ui->itemLayout->setDirection(QVBoxLayout::BottomToTop);
+
     m_items = QVector<LayerPanelItem*>();
 
-    QObject::connect(ui->newLayerButton, &QPushButton::clicked, this, &LayerPanel::onNewLayerClicked);
-    QObject::connect(ui->removeLayerButton, &QPushButton::clicked, this, &LayerPanel::onRemoveLayerClicked);
-
+    QObject::connect(ui->newLayerButton, &QPushButton::clicked, this, &LayerPanel::createNewLayer);
+    QObject::connect(ui->removeLayerButton, &QPushButton::clicked, this, &LayerPanel::removeActiveLayer);
     QObject::connect(ui->blendModeComboBox, &QComboBox::currentTextChanged, this, &LayerPanel::changeLayerBlendMode);
 }
 
 LayerPanel::~LayerPanel()
 {
     delete ui;
+}
+
+void LayerPanel::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    ui->scrollArea->setMinimumWidth(ui->scrollArea->verticalScrollBar()->sizeHint().width() + 142);
+    setMinimumWidth(ui->scrollArea->minimumWidth() + ui->horizontalSpacer1->minimumSize().width() + ui->horizontalSpacer2->minimumSize().width());
 }
 
 void LayerPanel::setCanvas(Canvas* canvas)
@@ -47,13 +52,11 @@ void LayerPanel::setCanvas(Canvas* canvas)
 
     populateItems();
     ui->newLayerButton->setEnabled(true);
-}
 
-void LayerPanel::showEvent(QShowEvent* event)
-{
-    QWidget::showEvent(event);
-    ui->scrollArea->setMinimumWidth(ui->scrollArea->verticalScrollBar()->sizeHint().width() + 142);
-    setMinimumWidth(ui->scrollArea->minimumWidth() + ui->horizontalSpacer1->minimumSize().width() + ui->horizontalSpacer2->minimumSize().width());
+    connect(m_canvas, &Canvas::activeLayerChanged, this, &LayerPanel::changeActiveItem);
+    connect(m_canvas, &Canvas::layerInserted, this, &LayerPanel::insertItem);
+    connect(m_canvas, &Canvas::layerRemoved, this, &LayerPanel::removeItem);
+    connect(m_canvas, &Canvas::layersSwapped, this, &LayerPanel::swapItems);
 }
 
 void LayerPanel::cleanup()
@@ -67,7 +70,83 @@ void LayerPanel::cleanup()
     ui->removeLayerButton->setEnabled(false);
 }
 
-void LayerPanel::onNewLayerClicked()
+void LayerPanel::updateItem(int index)
+{
+    Layer* reference = m_canvas->layerAt(index);
+    LayerPanelItem* item = m_items[index];
+    item->setDisplayName(reference->name());
+    if (m_canvas->activeLayer() == index)
+        m_items[index]->select();
+    else
+        m_items[index]->deselect();
+}
+
+void LayerPanel::updateItems()
+{
+    if (m_items.size() > 0)
+        updateItemsInRange(0, m_items.size() - 1);
+}
+
+void LayerPanel::updateItemsInRange(int start, int end)
+{
+    for (int i = start; i <= end; i++)
+    {
+        updateItem(i);
+    }
+}
+
+void LayerPanel::swapItems(int a, int b)
+{
+    updateItem(a);
+    updateItem(b);
+}
+
+void LayerPanel::insertItem(int index)
+{
+    LayerPanelItem* item = new LayerPanelItem(this);
+    QObject::connect(item, &LayerPanelItem::upButtonClicked, this, &LayerPanel::moveLayerUp);
+    QObject::connect(item, &LayerPanelItem::downButtonClicked, this, &LayerPanel::moveLayerDown);
+    QObject::connect(item, &LayerPanelItem::visibleButtonToggled, this, &LayerPanel::toggleLayerVisibility);
+    QObject::connect(item, &LayerPanelItem::clicked, this, &LayerPanel::changeActiveLayer);
+
+    if (index >= m_items.size())
+    {
+        m_items.push_back(item);
+        ui->itemLayout->insertWidget(-1, item);
+    }
+    else
+    {
+        m_items.insert(index, item);
+        ui->itemLayout->insertWidget(index, item);
+    }
+
+    updateItem(index);
+    m_canvas->setActiveLayer(index);
+}
+
+void LayerPanel::removeItem(int index)
+{
+    auto item = m_items.takeAt(index);
+    ui->itemLayout->removeWidget(item);
+    delete item;
+
+    if (index == m_canvas->activeLayer() && m_items.size() > 0)
+    {
+        updateItem(index);
+    }
+}
+
+void LayerPanel::changeActiveItem(int oldIndex, int newIndex)
+{
+    if (oldIndex != newIndex)
+        updateItem(oldIndex);
+    updateItem(newIndex);
+
+    Layer::BlendMode activeBlendMode = m_canvas->layerAt(m_canvas->activeLayer())->blendMode();
+    ui->blendModeComboBox->setCurrentText(blendModeName(activeBlendMode));
+}
+
+void LayerPanel::createNewLayer()
 {
     if (m_canvas->layerCount() < 2)
     {
@@ -75,31 +154,79 @@ void LayerPanel::onNewLayerClicked()
     }
 
     int index = m_canvas->activeLayer() + 1;
-    m_items[m_canvas->activeLayer()]->deselect();
-    m_canvas->setActiveLayer(index);
     m_canvas->createLayer(index);
-    addItem(*m_canvas->layerAt(index));
-    m_items[index]->select();
 }
 
-void LayerPanel::onRemoveLayerClicked()
+void LayerPanel::removeActiveLayer()
 {
     int index = m_canvas->activeLayer();
-    int newActive = index;
-
-    if (index == m_canvas->layerCount() - 1)
-        newActive = index - 1;
-
-    m_canvas->setActiveLayer(newActive);
-
     m_canvas->removeLayer(index);
-    removeItem(index);
-
-    m_items[newActive]->select();
 
     if (m_canvas->layerCount() < 2)
     {
         ui->removeLayerButton->setEnabled(false);
+    }
+}
+
+void LayerPanel::toggleLayerVisibility()
+{
+    LayerPanelItem* layer = qobject_cast<LayerPanelItem*>(QObject::sender());
+    Q_ASSERT(layer);
+
+    int senderIndex = m_items.indexOf(layer);
+    m_canvas->layerAt(senderIndex)->toggleVisible();
+}
+
+void LayerPanel::moveLayerUp()
+{
+    LayerPanelItem* layer = qobject_cast<LayerPanelItem*>(QObject::sender());
+    Q_ASSERT(layer);
+
+    int senderIndex = m_items.indexOf(layer);
+    if (senderIndex >= m_canvas->layerCount() - 1)
+        return;
+    m_canvas->swapLayers(senderIndex, senderIndex + 1);
+}
+
+void LayerPanel::moveLayerDown()
+{
+    LayerPanelItem* layer = qobject_cast<LayerPanelItem*>(QObject::sender());
+    Q_ASSERT(layer);
+
+    int senderIndex = m_items.indexOf(layer);
+    if (senderIndex < 1)
+        return;
+    m_canvas->swapLayers(senderIndex, senderIndex - 1);
+}
+
+void LayerPanel::changeActiveLayer()
+{
+    LayerPanelItem* layer = qobject_cast<LayerPanelItem*>(QObject::sender());
+    Q_ASSERT(layer);
+
+    int senderIndex = m_items.indexOf(layer);
+    int currrentActive = m_canvas->activeLayer();
+    if (currrentActive != senderIndex)
+    {
+        m_canvas->setActiveLayer(senderIndex);
+    }
+}
+
+int LayerPanel::indexOfItem(const LayerPanelItem* item) const
+{
+    for (int i = 0; i < m_items.size(); i++)
+    {
+        if (item == m_items[i])
+            return i;
+    }
+    return -1;
+}
+
+void LayerPanel::populateItems()
+{
+    for (int i = 0; i < m_canvas->layerCount(); i++)
+    {
+        insertItem(i);
     }
 }
 
@@ -170,98 +297,6 @@ void LayerPanel::changeLayerBlendMode(const QString &text)
     layer->setBlendMode(newBlendMode);
 }
 
-void LayerPanel::onVisibilityToggled(LayerPanelItem* sender)
-{
-    int senderIndex = getIndexOf(sender);
-    toggleLayerVisibility(senderIndex);
-}
-
-void LayerPanel::onMoveUpRequested(LayerPanelItem* sender)
-{
-    int senderIndex = getIndexOf(sender);
-    if (senderIndex >= m_canvas->layerCount() - 1)
-        return;
-    swapLayers(senderIndex, senderIndex + 1);
-}
-
-void LayerPanel::onMoveDownRequested(LayerPanelItem* sender)
-{
-    int senderIndex = getIndexOf(sender);
-    if (senderIndex < 1)
-        return;
-    swapLayers(senderIndex, senderIndex - 1);
-}
-
-void LayerPanel::onItemClicked(LayerPanelItem* sender)
-{
-    int senderIndex = getIndexOf(sender);
-    if (m_canvas->activeLayer() != senderIndex)
-        m_items[m_canvas->activeLayer()]->deselect();
-    m_canvas->setActiveLayer(senderIndex);
-    m_items[senderIndex]->select();
-
-    Layer::BlendMode activeBlendMode = m_canvas->layerAt(m_canvas->activeLayer())->blendMode();
-    ui->blendModeComboBox->setCurrentText(blendModeName(activeBlendMode));
-}
-
-void LayerPanel::updateItemDisplay(int index)
-{
-    Layer* reference = m_canvas->layerAt(index);
-    LayerPanelItem* item = m_items[index];
-    item->setDisplayName(reference->name());
-    if (m_canvas->activeLayer() == index)
-        m_items[index]->select();
-    else
-        m_items[index]->deselect();
-}
-
-void LayerPanel::toggleLayerVisibility(int index)
-{
-    m_canvas->layerAt(index)->toggleVisible();
-}
-
-void LayerPanel::swapLayers(int a, int b)
-{
-    if (m_canvas->activeLayer() == a)
-        m_canvas->setActiveLayer(b);
-    else if (m_canvas->activeLayer() == b)
-        m_canvas->setActiveLayer(a);
-
-    m_canvas->swapLayers(a, b);
-    updateItemDisplay(a);
-    updateItemDisplay(b);
-}
-
-void LayerPanel::addItem(const Layer& reference)
-{
-    LayerPanelItem* item = new LayerPanelItem(reference.name(), this);
-    m_items.push_back(item);
-
-    QObject::connect(item, &LayerPanelItem::upButtonClicked, this, &LayerPanel::onMoveUpRequested);
-    QObject::connect(item, &LayerPanelItem::downButtonClicked, this, &LayerPanel::onMoveDownRequested);
-    QObject::connect(item, &LayerPanelItem::visibleButtonToggled, this, &LayerPanel::onVisibilityToggled);
-    QObject::connect(item, &LayerPanelItem::clicked, this, &LayerPanel::onItemClicked);
-
-    ui->itemLayout->insertWidget(0, item);
-}
-
-void LayerPanel::removeItem(int index)
-{
-    auto item = m_items.takeAt(index);
-    ui->itemLayout->removeWidget(item);
-    delete item;
-}
-
-int LayerPanel::getIndexOf(const LayerPanelItem* item) const
-{
-    for (int i = 0; i < m_items.size(); i++)
-    {
-        if (item == m_items[i])
-            return i;
-    }
-    return -1;
-}
-
 QString LayerPanel::blendModeName(Layer::BlendMode blendMode) const
 {
     switch (blendMode)
@@ -297,15 +332,4 @@ QString LayerPanel::blendModeName(Layer::BlendMode blendMode) const
     default:
         Q_ASSERT_X(false, "blendModeName", "Name not found!");
     }
-}
-
-void LayerPanel::populateItems()
-{
-    for (int i = 0; i < m_canvas->layerCount(); i++)
-    {
-        addItem(*(m_canvas->layerAt(i)));
-    }
-
-    m_canvas->setActiveLayer(0);
-    m_items[0]->select();
 }

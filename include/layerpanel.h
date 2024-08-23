@@ -33,30 +33,31 @@ public:
 public:
     explicit LayerPanel(QWidget* parent = nullptr);
     ~LayerPanel();
-    void cleanup();
 
     void showEvent(QShowEvent* event) override;
 
     void setCanvas(Canvas* canvas);
+    void cleanup();
 public slots:
-    void onVisibilityToggled(LayerPanelItem* sender);
-    void onMoveUpRequested(LayerPanelItem* sender);
-    void onMoveDownRequested(LayerPanelItem* sender);
-    void onItemClicked(LayerPanelItem* sender);
-    void onNewLayerClicked();
-    void onRemoveLayerClicked();
+    void toggleLayerVisibility();
+    void moveLayerUp();
+    void moveLayerDown();
+    void changeActiveLayer();
+    void createNewLayer();
+    void removeActiveLayer();
     void changeLayerBlendMode(const QString &text);
-private:
-    void swapLayers(int a, int b);
-    void toggleLayerVisibility(int index);
 
-    void populateItems();
-    void addItem(const Layer& reference);
+    void updateItem(int index);
+    void updateItems();
+    void updateItemsInRange(int start, int end);
+    void swapItems(int a, int b);
+    void insertItem(int index);
     void removeItem(int index);
-    void updateItemDisplay(int index);
-
-    int getIndexOf(const LayerPanelItem* item) const;
-    LayerPanelItem* getItemAtIndex(int index);
+    void changeActiveItem(int oldIndex, int newIndex);
+private:
+    void populateItems();
+    int indexOfItem(const LayerPanelItem* item) const;
+    LayerPanelItem* itemAt(int index);
 
     QString blendModeName(Layer::BlendMode blendMode) const;
     Layer::BlendMode blendModeFromName(const QString& name);

@@ -109,15 +109,22 @@ void Canvas::markDirty(Layer *dirtyLayer, const QRect &dirtyRegion)
 void Canvas::swapLayers(int a, int b)
 {
     m_layers.swapItemsAt(a, b);
+    int newActive = m_activeLayer;
+    if (m_activeLayer == a)
+        newActive = b;
+    else if (m_activeLayer == b)
+        newActive = a;
+    if (newActive != m_activeLayer)
+        setActiveLayer(newActive);
+
+    emit layersSwapped(a, b);
+    // TODO: Add slot in canvas widget for layer swap
     emit canvasDirty(QVector<int>({a, b}), rect());
 }
 
 // FIXME: Calling on empty layer list is unsafe
 void Canvas::createLayer(int index, const QColor &color)
 {
-    if (m_layers.size() < 1)
-        Q_ASSERT(index == 0);
-
     QString name = "Layer ";
     name.append(QString::number(m_newLayerSuffix));
     QImage image = QImage(m_size, QImage::Format_ARGB32);
@@ -126,23 +133,30 @@ void Canvas::createLayer(int index, const QColor &color)
     Layer* layer = new Layer(name, image, this);
     connect(layer, &Layer::layerDirty, this, &Canvas::markDirtyFromLayer);
 
-    if (m_layers.size() < 1)
+    if (index >= m_layers.size())
         m_layers.push_back(layer);
     else
         m_layers.insert(index, layer);
     m_newLayerSuffix++;
 
-    emit layerInsersted(index);
+    emit layerInserted(index);
+    // TODO: Add slot in canvas widget for layer insertion
     emit canvasDirty(QVector<int>({index}), rect());
 }
 
-// TODO: Add signal for layer removal and insertion
 void Canvas::removeLayer(int index)
 {
+    if (m_layers.size() > 1 && index != 0)
+        setActiveLayer(index - 1);
+    else
+        setActiveLayer(0);
+
     Layer* layer = m_layers.takeAt(index);
     delete layer;
     layer = nullptr;
 
+    emit layerRemoved(index);
+    // TODO: Add slot in canvas widget for layer deletion
     emit canvasDirty(QVector<int>({index - 1}), rect());
 }
 
@@ -152,5 +166,8 @@ void Canvas::markDirty(QVector<int> dirtyLayers, const QRect &dirtyRegion)
 }
 void Canvas::setActiveLayer(int index)
 {
+    int oldActive = m_activeLayer;
     m_activeLayer = index;
+
+    emit activeLayerChanged(oldActive, index);
 }

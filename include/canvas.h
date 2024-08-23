@@ -59,7 +59,11 @@ private slots:
     void markDirtyFromLayer(const QRect& dirtyRegion);
 signals:
     void canvasDirty(const QVector<int>& dirtyLayers, const QRect& dirtyRegion);
-    void layerInsersted(int index);
+    void layerInserted(int index);
+    void layerRemoved(int index);
+    void layersSwapped(int a, int b);
+    void layerVisibleToggled(int index);
+    void activeLayerChanged(int oldIndex, int newIndex);
 private:
     // TEMP
     QColor m_primaryColor;

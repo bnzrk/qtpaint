@@ -1,9 +1,9 @@
 #include "layerpanelitem.h"
 #include "ui_layerpanelitem.h"
 
-LayerPanelItem::LayerPanelItem(QString displayName, QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::LayerPanelItem)
+LayerPanelItem::LayerPanelItem(QString displayName, QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::LayerPanelItem)
 {
     ui->setupUi(this);
 
@@ -15,6 +15,20 @@ LayerPanelItem::LayerPanelItem(QString displayName, QWidget *parent)
     ui->draggableRegion->setStyleSheet(QString(""));
 }
 
+LayerPanelItem::LayerPanelItem(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::LayerPanelItem)
+{
+    ui->setupUi(this);
+
+    QObject::connect(ui->visibleToggle, &QPushButton::toggled, this, &LayerPanelItem::onVisibleButtonToggled);
+    QObject::connect(ui->upButton, &QPushButton::clicked, this, &LayerPanelItem::onUpButtonClicked);
+    QObject::connect(ui->downButton, &QPushButton::clicked, this, &LayerPanelItem::onDownButtonClicked);
+
+    setDisplayName("");
+    deselect();
+}
+
 LayerPanelItem::~LayerPanelItem()
 {
     delete ui;
@@ -22,7 +36,7 @@ LayerPanelItem::~LayerPanelItem()
 
 void LayerPanelItem::mousePressEvent(QMouseEvent* event)
 {
-    emit clicked(this);
+    emit clicked();
 }
 
 void LayerPanelItem::select()
@@ -37,17 +51,17 @@ void LayerPanelItem::deselect()
 
 void LayerPanelItem::onVisibleButtonToggled()
 {
-    emit visibleButtonToggled(this);
+    emit visibleButtonToggled();
 }
 
 void LayerPanelItem::onUpButtonClicked()
 {
-    emit upButtonClicked(this);
+    emit upButtonClicked();
 }
 
 void LayerPanelItem::onDownButtonClicked()
 {
-    emit downButtonClicked(this);
+    emit downButtonClicked();
 }
 
 QString LayerPanelItem::getDisplayName()

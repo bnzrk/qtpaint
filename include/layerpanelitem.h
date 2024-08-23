@@ -13,7 +13,8 @@ class LayerPanelItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit LayerPanelItem(QString displayName, QWidget *parent = nullptr);
+    explicit LayerPanelItem(QString displayName, QWidget* parent = nullptr);
+    explicit LayerPanelItem(QWidget* parent = nullptr);
     ~LayerPanelItem();
 
     void select();
@@ -29,10 +30,11 @@ public slots:
     void onUpButtonClicked();
     void onDownButtonClicked();
 signals:
-    void visibleButtonToggled(LayerPanelItem* sender);
-    void upButtonClicked(LayerPanelItem* sender);
-    void downButtonClicked(LayerPanelItem* sender);
-    void clicked(LayerPanelItem* sender);
+    void visibleButtonToggled();
+    void upButtonClicked();
+    void downButtonClicked();
+    void clicked();
+    void shiftClicked();
 private:
     virtual void mousePressEvent(QMouseEvent* event) override;
 private:
